@@ -6,7 +6,7 @@ metadata:
     maintainer:
         - xue_xing@hoperun.com
     scope:
-        - network
+        - nic
     os:
         - centos
     devices:
