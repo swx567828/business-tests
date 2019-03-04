@@ -1,6 +1,6 @@
 
 metadata:
-    name: syn_time
+    name: Check_013
     format: "Lava-Test-Shell Test Definition 1.0"
     description: "Fault tolerance test on the network interface"
     maintainer:
