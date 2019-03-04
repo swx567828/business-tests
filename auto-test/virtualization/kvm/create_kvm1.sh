@@ -21,27 +21,27 @@ set -x
 . ../../../utils/sh-test-lib		
 
 #获取脚本名称作为测试用例名称
-test_name=$(basename $0 | sed -e 's/\.sh//')
+#test_name=$(basename $0 | sed -e 's/\.sh//')
 #创建log目录
-TMPDIR=./logs/temp
-mkdir -p ${TMPDIR}
-#存放脚本处理中间状态/值等
+#TMPDIR=./logs/temp
+#mkdir -p ${TMPDIR}
+##存放脚本处理中间状态/值等
 TMPFILE=${TMPDIR}/${test_name}.tmp
 #存放每个测试步骤的执行结果
-RESULT_FILE=${TMPDIR}/${test_name}.result
-test_result="pass"
+#RESULT_FILE=${TMPDIR}/${test_name}.result
+#test_result="pass"
 
 #预置条件
 function init_env()
 {
 
 #检查结果文件是否存在，创建结果文件：
-fn_checkResultFile ${RESULT_FILE}
+#fn_checkResultFile ${RESULT_FILE}
 
 #root用户执行
 if [ `whoami` != 'root' ]
 then
-    PRINT_LOG "WARN" " You must be root user " 
+    echo " You must be root user " 
     return 1
 fi
 
@@ -62,17 +62,18 @@ case "${distro}" in
 	cd ~
 	pkgs="virt-install libvirt* python2-pip"
 	install_deps "${pkgs}"
-	if [ $? -eq 0 ];then
-	    PRINT_LOG "INFO" "Libvirt was installed successfully"
-        fn_writeResultFile "${RESULT_FILE}" "libvirt_install" "pass"
-        return 0 
-    else
-	    PRINT_LOG "FATAL" "Libvirt installation failed"
-        fn_writeResultFile "${RESULT_FILE}" "libvirt_install" "fail"
-        return 1
-    fi
-	
-    pip install --ignore-installed --force-reinstall 'requests==2.6.0' urllib3
+	#if [ $? -eq 0 ];then
+	    #PRINT_LOG "INFO" "Libvirt was installed successfully"
+            #fn_writeResultFile "${RESULT_FILE}" "libvirt_install" "pass"
+            #return 0 
+   	# else
+	    #PRINT_LOG "FATAL" "Libvirt installation failed"
+            #fn_writeResultFile "${RESULT_FILE}" "libvirt_install" "fail"
+            #return 1
+        #fi
+
+	print_info $? install_libvirt
+       pip install --ignore-installed --force-reinstall 'requests==2.6.0' urllib3
 	cd -
 	#下载loder文件
 	if [ ! -d /usr/share/AAVMF ];then
@@ -102,13 +103,15 @@ systemctl start libvirtd
 #测试libvirt服务是否启动
 res=`virsh -c qemu:///system list|grep "Id"|awk '{print $1}'`
 if [ "$res"x == "Id"x ];then
-	PRINT_LOG "INFO" "Libvirt started successfully"
-    fn_writeResultFile "${RESULT_FILE}" "libvirt_start" "pass"
-    return 0 
+	print_info 0 libvirt_start
+	#PRINT_LOG "INFO" "Libvirt started successfully"
+    	#fn_writeResultFile "${RESULT_FILE}" "libvirt_start" "pass"
+    	#return 0 
 else
-	PRINT_LOG "FATAL" "Libvirt failed to start"
-    fn_writeResultFile "${RESULT_FILE}" "libvirt_start" "fail"
-    return 1
+	print_info 1 libvirt_start
+	#PRINT_LOG "FATAL" "Libvirt failed to start"
+    	#fn_writeResultFile "${RESULT_FILE}" "libvirt_start" "fail"
+    	#return 1
 fi
 
 
@@ -143,27 +146,29 @@ function test_case()
 
 #创建虚拟机
 virsh define kvm.xml
-if [ $? -eq 0 ];then
-	PRINT_LOG "INFO" "The virtual machine was created successfully"
-    fn_writeResultFile "${RESULT_FILE}" "kvm_define" "pass"
-    return 0 
-else
-	PRINT_LOG "FATAL" "The virtual machine creation failed"
-    fn_writeResultFile "${RESULT_FILE}" "kvm_define" "fail"
-    return 1
-fi
+print_info $? kvm_define
+#if [ $? -eq 0 ];then
+	#PRINT_LOG "INFO" "The virtual machine was created successfully"
+    	#fn_writeResultFile "${RESULT_FILE}" "kvm_define" "pass"
+    	#return 0 
+#else
+	#PRINT_LOG "FATAL" "The virtual machine creation failed"
+    	#fn_writeResultFile "${RESULT_FILE}" "kvm_define" "fail"
+    	#return 1
+#fi
 
 #启动虚拟机
 virsh start kvm
-if [ $? -eq 0 ];then
-	PRINT_LOG "INFO" "The virtual machine started successfully"
-    fn_writeResultFile "${RESULT_FILE}" "kvm_start" "pass"
-    return 0 
-else
-	PRINT_LOG "FATAL" "Virtual machine startup failed"
-    fn_writeResultFile "${RESULT_FILE}" "kvm_start" "fail"
-    return 1
-fi
+print_info $? kvm_start
+#if [ $? -eq 0 ];then
+	#PRINT_LOG "INFO" "The virtual machine started successfully"
+    	#fn_writeResultFile "${RESULT_FILE}" "kvm_start" "pass"
+    	#return 0 
+#else
+	#PRINT_LOG "FATAL" "Virtual machine startup failed"
+    	#fn_writeResultFile "${RESULT_FILE}" "kvm_start" "fail"
+    	#return 1
+#fi
 
 #连接虚拟机
 EXPECT=$(which expect)	
@@ -180,16 +185,17 @@ expect "]#"
 send "ip a\r"
 expect eof
 EOF
-	
-if [ $? -eq 0 ];then
-	PRINT_LOG "INFO" "The virtual machine connected successfully"
-    fn_writeResultFile "${RESULT_FILE}" "kvm_connect" "pass"
-    return 0 
-else
-	PRINT_LOG "FATAL" "Virtual machine connection failed"
-    fn_writeResultFile "${RESULT_FILE}" "kvm_connect" "fail"
-    return 1
-fi
+
+print_info $? kvm_connect
+#if [ $? -eq 0 ];then
+	#PRINT_LOG "INFO" "The virtual machine connected successfully"
+    	#fn_writeResultFile "${RESULT_FILE}" "kvm_connect" "pass"
+    	#return 0 
+#else
+	#PRINT_LOG "FATAL" "Virtual machine connection failed"
+    	#fn_writeResultFile "${RESULT_FILE}" "kvm_connect" "fail"
+   	#return 1
+#fi
 
 }
 
@@ -199,7 +205,7 @@ function clean_env()
 {
 
 #清除临时文件
-FUNC_CLEAN_TMP_FILE
+#FUNC_CLEAN_TMP_FILE
 
 #停止虚拟机
 virsh destroy kvm
@@ -217,13 +223,9 @@ systemctl stop libvirtd
 
 function main()
 {
-    init_env || test_result="fail"
-    if [ ${test_result} = 'pass' ]
-    then
-        test_case || test_result="fail"
-    fi
-    clean_env || test_result="fail"
-	[ "${test_result}" = "pass" ] || return 1
+    init_env
+    test_case
+    clean_env 
 }
 
 main $@
