@@ -111,6 +111,7 @@ function delete_network_vlan()
 
       print_info $? delete_vconfig
 }
+init_env
 get_network_name
 config_network_vlan
 delete_network_vlan
