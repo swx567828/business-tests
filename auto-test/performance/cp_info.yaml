@@ -5,7 +5,7 @@ metadata:
     maintainer:
         - hongxin_228@163.com
     os:
-        - centos
+        - suse
     scope:
         - performance 
     devices:
