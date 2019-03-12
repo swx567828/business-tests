@@ -1,1 +1,1 @@
-Hi There are cases sscripts for business testing
+Hi There are cases scripts for business testing
