@@ -99,13 +99,16 @@ function verify_network_module(){
 	for d in ${driver[@]}
 	do
 		lsmod | grep $d 
+
 		if [ $? -eq 0 ];then
+
 			PRINT_LOG "INFO" "This $d module load normal"
 			fn_writeResultFile "${RESULT_FILE}" "$d module loaded" "pass"			
 		else
 			PRINT_LOG "FATAL" "This $d module load false"
 			fn_writeResultFile "${RESULT_FILE}" "$d module no exist" "fail"
-			return 1
+			lsmod
+return 1
 		fi
 	done	
 }
