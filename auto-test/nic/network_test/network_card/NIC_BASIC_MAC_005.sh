@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 #*****************************************************************************************
 #用例名称：NIC_BASIC_MAC_005
 #用例功能：ethtool查询网口MAC地址
@@ -175,6 +175,7 @@ function test_case()
 		PRINT_LOG "INFO" "no such device xxx."
 		fn_writeResultFile "${RESULT_FILE}" "no device" "pass"
 	fi
+	verify_dmesg
     #检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
     check_result ${RESULT_FILE}
 }
@@ -186,7 +187,6 @@ function clean_env()
     FUNC_CLEAN_TMP_FILE
     #自定义环境恢复实现部分,工具安装不建议恢复
       #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
-	verify_dmesg
 }
 
 
