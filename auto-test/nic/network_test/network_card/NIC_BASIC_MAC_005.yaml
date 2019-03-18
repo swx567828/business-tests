@@ -1,0 +1,23 @@
+metadata:
+    name: NIC_BASIC_MAC_005
+    format: "Lava-Test-Shell Test Definition 1.0"
+    description: "Verify the ethtool-p parameter, view MAC address"
+    maintainer:
+        - min_shuai@hoperun.com
+    scope:
+        - minshuai
+    os:
+        - centos  
+    devices:
+        - d05
+    level: 5
+    totalcase:
+        centos: 1
+run:
+    steps:
+        - "cd auto-test/nic/network_test/network_card; ./NIC_BASIC_MAC_005.sh; cd -"
+parse:
+   pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
+   fixupdict:
+   FAIL: fail
+   PASS: pass
