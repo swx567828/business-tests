@@ -1,23 +1,25 @@
-
 #!/bin/bash
-set -x
+
 #*****************************************************************************************
-#用例名称：NIC_BASIC_MAC_005
-#用例功能：ethtool查询网口MAC地址
+#用例名称：NIC_BASIC_MAC_003
+#用例功能：网口MAC地址设置容错测试
 #作者：hwx653129
 #完成时间：2019-1-25
 
 #前置条件：
-#       1.单板启动正常
-#       2.所有网口各模块加载正常
+# 	1.单板启动正常
+# 	2.所有网口各模块加载正常
 
 #测试步骤：
-#       1.执行ethtool -P ethx查询网口MAC地址
+# 	1.网口正常初始化后，调用命令“ifconfig ethx hw ether xx:xx:xx:xx:xx:xx”，配置非法MAC地址（包括全0，全F，多播广播，大于48bit，小于48bit）
+# 	2.网口正常初始化后，调用命令“ifconfig 网口名 hw ether xx:xx:xx:xx:xx:xx”，配置设备不存在网口的MAC地址
 
 #测试结果:
-#       1.显示网口的MAC地址                                                       
+# 	1.非法MAC设置不成功，MAC地址如果不足48bit，会自动加零，如果超过48bit，会自动截断
+# 	2.配置设备不存在网口mac地址，系统提示无此设备                                                 
 #*****************************************************************************************
 
+#加载公共函数,具体看环境对应的位置修改
 #加载公共函数,具体看环境对应的位置修改
 . ../../../../utils/error_code.inc
 . ../../../../utils/test_case_common.inc
@@ -25,6 +27,7 @@ set -x
 . ../../../../utils/sh-test-lib
 #. ./utils/error_code.inc
 #. ./utils/test_case_common.inc
+ 
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
 #创建log目录
@@ -85,7 +88,6 @@ function find_physical_card(){
 	done
 	
 }
-
 #************************************************************#
 # Name        : verify_network_module                        #
 # Description : 确认网络模块                                 #
@@ -95,7 +97,6 @@ function find_physical_card(){
 function verify_network_module(){
 	#查找所有物理网卡
 	#find_physical_card
-
 	#保存所有网卡驱动
 	for ((i=0;i<${#total_network_cards[@]};i++))
 	do
@@ -128,67 +129,129 @@ function verify_network_module(){
 		fi
 	done
 }
+#************************************************************#
+# Name        : pre_mac                        #
+# Description : 获取原先mac地址                                 #
+# Parameters  : 无
+# return      : 无                                      #
+#************************************************************#
+function pre_mac(){
+	for ((i=0;i<${#total_network_cards[@]};i++))
+	do
+		mac[i]=`ifconfig ${total_network_cards[i]} | grep "ether" | awk '{print $2}'`		
+		#ethtool -P $net | awk '{print $3}'
+	done
+}
+#************************************************************#
+# Name        : restore_mac                        #
+# Description : 恢复mac地址                                 #
+# Parameters  : 无
+# return      : 无                                      #
+#************************************************************#
+function restore_mac(){
+	for ((i=0;i<${#total_network_cards[@]};i++))	
+	do
+		ifconfig ${total_network_cards[i]} hw ether ${mac[i]}
+	done
+}
+
 
 #预置条件
 function init_env()
 {
     #检查结果文件是否存在，创建结果文件：
     fn_checkResultFile ${RESULT_FILE}
-
+    
     #root用户执行
     if [ `whoami` != 'root' ]
     then
-        PRINT_LOG "WARN" " You must be root user "
+        PRINT_LOG "WARN" " You must be root user " 
         return 1
-    fi
-        find_physical_card
-        verify_network_module
-    #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份
+    fi	
+	find_physical_card
+	verify_network_module
+	pre_mac
+    #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份 
       #需要安装工具，使用公共函数install_deps，用法：install_deps "${pkgs}"
       #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
 }
 
-
-
 #测试执行
 function test_case()
 {
-    #ethtool查询网口MAC地址
-    #ls=("enp125s0f0" "enp125s0f1" "enp125s0f2" "enp125s0f3" "enp189s0f0" "enp189s0f1")
-    for net in ${total_network_cards[@]}
-    do
-		ethtool -P $net
+	#给网口配置MAC地址
+	mac_address=("00:00:00:00:00:00" "FF:FF:FF:FF:FF:FF" "00:18:85" "00:18:85:00:00:4e:88:24")
+	shrot_mac="00:18:85:00:00:00"
+	lang_mac="00:18:85:00:00:4e"	
+	for net in ${total_network_cards[@]}
+	do	
+		ifconfig $net hw ether ${mac_address[0]}		
 		if [ $? -eq 0 ]
-		then
-			PRINT_LOG "INFO" "$net has MAC address."
-			fn_writeResultFile "${RESULT_FILE}" "$net normal" "pass"
+		then 
+			PRINT_LOG "FATAL" "This $net MAC address is ${mac_address[0]}, please check it."
+			fn_writeResultFile "${RESULT_FILE}" "modify $net illegal MAC address ${mac_address[0]}" "fail"
 		else
-			PRINT_LOG "FATAL" "$net it can not find MAC address,please check it."
-			fn_writeResultFile "${RESULT_FILE}" "$net no MAC address" "fail"
+			PRINT_LOG "INFO" "$net can not assign requested address ${mac_address[0]}."
+			fn_writeResultFile "${RESULT_FILE}" "modify $net illegal MAC address ${mac_address[0]}" "pass"
+		fi	
+		
+		ifconfig $net hw ether ${mac_address[1]}
+		if [ $? -eq 0 ]
+		then 
+			PRINT_LOG "FATAL" "This $net MAC address is ${mac_address[1]}, please check it."
+			fn_writeResultFile "${RESULT_FILE}" "modify $net illegal MAC address ${mac_address[1]}" "fail"			
+		else
+			PRINT_LOG "INFO" "$net can not assign requested address ${mac_address[1]}."
+			fn_writeResultFile "${RESULT_FILE}" "modify $net illegal MAC address ${mac_address[1]}" "pass"
 		fi
-    done
-
-	ethtool -P xxx
+		
+		ifconfig $net hw ether ${mac_address[2]}
+		tmp_mac=$(ifconfig $net | grep "ether" | awk '{print $2}')
+		if [ "${tmp_mac}" == "${shrot_mac}" ]
+		then 
+			PRINT_LOG "INFO" "$net can set up MAC address."
+			fn_writeResultFile "${RESULT_FILE}" "modify $net short mac address ${mac_address[2]}" "pass"
+		else
+			PRINT_LOG "FATAL" "$net can not set up MAC address, please check it."
+			fn_writeResultFile "${RESULT_FILE}" "modify $net short mac address ${mac_address[2]}" "fail"
+		fi
+		
+		ifconfig $net hw ether ${mac_address[3]}
+		tmp_mac=$(ifconfig $net | grep "ether" | awk '{print $2}')
+		if [ "${tmp_mac}" == "${lang_mac}" ]
+		then 
+			PRINT_LOG "INFO" "$net can set up MAC address."
+			fn_writeResultFile "${RESULT_FILE}" "modify $net short mac address ${mac_address[3]}" "pass"
+		else
+			PRINT_LOG "FATAL" "$net can not set up MAC address, please check it."
+			fn_writeResultFile "${RESULT_FILE}" "modify $net short mac address ${mac_address[3]}" "fail"
+		fi
+	done
+	
+	ifconfig xxx hw ether 00:18:85:00:00:4e
 	if [ $? -eq 0 ]
-	then
-		PRINT_LOG "FATAL" "query successful, please check it."
-		fn_writeResultFile "${RESULT_FILE}" "no device" "fail"
+	then 
+		PRINT_LOG "FATAL" "modify success, please check it, this xxx device is not exist."
+		fn_writeResultFile "${RESULT_FILE}" "device is not exist" "fail"
 	else
-		PRINT_LOG "INFO" "no such device xxx."
-		fn_writeResultFile "${RESULT_FILE}" "no device" "pass"
+		PRINT_LOG "INFO" "This xxx device is not exist."
+		fn_writeResultFile "${RESULT_FILE}" "device is not exist" "pass"
 	fi
-
+	
     #检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
     check_result ${RESULT_FILE}
 }
 
+
 #恢复环境
 function clean_env()
 {
+	restore_mac
     #清除临时文件
     FUNC_CLEAN_TMP_FILE
     #自定义环境恢复实现部分,工具安装不建议恢复
       #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
+	
 }
 
 
@@ -200,8 +263,7 @@ function main()
         test_case || test_result="fail"
     fi
     clean_env || test_result="fail"
-    [ "${test_result}" = "pass" ] || return 1
-
+	[ "${test_result}" = "pass" ] || return 1
 }
 
 main $@
@@ -209,4 +271,3 @@ ret=$?
 #LAVA平台上报结果接口，勿修改
 lava-test-case "$test_name" --result ${test_result}
 exit ${ret}
-
