@@ -2,7 +2,7 @@
 metadata:
     name: NIC_ADVANCED_GSO_002
     format: "Lava-Test-Shell Test Definition 1.0"
-    description: "Service network port GSO setting query test"
+    description: "Ssd disk (es3000) query"
     maintainer:
         - cao_guo@hoperun.com
     scope:
