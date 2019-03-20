@@ -20,7 +20,7 @@
 . ../../../../utils/error_code.inc
 . ../../../../utils/test_case_common.inc
 . ../../../../utils/sys_info.sh
-. ../../../../utils/sh-test-lib 
+. ../../../../utils/sh-test-lib 		
 
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
@@ -57,11 +57,11 @@ function gso_check(){
 	gso_status=`ethtool -k $1 |grep generic-segmentation-offload|awk -F " " '{print $2}'`
 	if [ "$gso_status" != "off" ]
 	then
-		PRINT_LOG "FATAL" "$1 gso set → off fail"
-		fn_writeResultFile "${RESULT_FILE}" "$1 gso set → off" "fail"
+		PRINT_LOG "FATAL" "$1 gso set to off fail"
+		fn_writeResultFile "${RESULT_FILE}" "$1 gso set to off" "fail"
 	else
-		PRINT_LOG "INFO" "$1 gso set → off pass"
-		fn_writeResultFile "${RESULT_FILE}" "$1 gso set → off" "pass"
+		PRINT_LOG "INFO" "$1 gso set to off pass"
+		fn_writeResultFile "${RESULT_FILE}" "$1 gso set to off" "pass"
 	fi
 	
 	#开启gso
@@ -69,11 +69,11 @@ function gso_check(){
 	gso_status=`ethtool -k $1 |grep generic-segmentation-offload|awk -F " " '{print $2}'`
 	if [ "$gso_status" != "on" ]
 	then
-		PRINT_LOG "FATAL" "$1 gso set → on fail"
-		fn_writeResultFile "${RESULT_FILE}" "$1 gso set → on" "fail"
+		PRINT_LOG "FATAL" "$1 gso set to on fail"
+		fn_writeResultFile "${RESULT_FILE}" "$1 gso set to on" "fail"
 	else
-		PRINT_LOG "INFO" "$1 gso set → on pass"
-		fn_writeResultFile "${RESULT_FILE}" "$1 gso set → on" "pass"
+		PRINT_LOG "INFO" "$1 gso set to on pass"
+		fn_writeResultFile "${RESULT_FILE}" "$1 gso set to on" "pass"
 	fi
 }
 
@@ -132,3 +132,4 @@ ret=$?
 #LAVA平台上报结果接口，勿修改
 lava-test-case "$test_name" --result ${test_result}
 exit ${ret}
+
