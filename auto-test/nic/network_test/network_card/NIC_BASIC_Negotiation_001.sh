@@ -1,20 +1,22 @@
 #!/bin/bash
-set -x
+
 #*****************************************************************************************
-#用例名称：NIC_BASIC_MAC_005
-#用例功能：ethtool查询网口MAC地址
+#用例名称：NIC_BASIC_Negotiation_001
+#用例功能：网卡PCIE自协商测试
 #作者：hwx653129
-#完成时间：2019-1-25
+#完成时间：2019-1-28
 
 #前置条件：
-#       1.单板启动正常
-#       2.所有网口各模块加载正常
+# 	无
 
 #测试步骤：
-#       1.执行ethtool -P ethx查询网口MAC地址
+# 	1. 将网卡插到PCIE槽上，单板上电，进入系统后，通过lspic |grep -I eth查看到是否能找到网卡，lspci -vvv 查询网卡协商是否正常，有结果A)
+# 	2. 配置IP检查网卡是否能正常通信，有结果B)
+# 	3. 支持的网卡需要遍历支持的PCIE槽位，重复步骤1-2
 
 #测试结果:
-#       1.显示网口的MAC地址                                                       
+# 	A) OS下能找到网卡，网卡PCIe 协商速率带宽LnkSta字段显示的值正常
+# 	B) 网卡能正常通信。                                               
 #*****************************************************************************************
 
 #加载公共函数,具体看环境对应的位置修改
@@ -23,7 +25,8 @@ set -x
 . ../../../../utils/sys_info.sh
 . ../../../../utils/sh-test-lib
 #. ./utils/error_code.inc
-#. ./utils/test_case_common.inc
+#. ./utils/test_case_common.inc 
+ 
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
 #创建log目录
@@ -84,47 +87,58 @@ function find_physical_card(){
 	done
 	
 }
-
 #************************************************************#
-# Name        : verify_network_module                        #
-# Description : 确认网络模块                                 #
-# Parameters  : 无
-# return      : 无                                      #
+# Name        : verify_negotiate                               #
+# Description : 确认网卡协商速率                               #
+# Parameters  : 无                                           #
 #************************************************************#
-function verify_network_module(){
-	#查找所有物理网卡
-	#find_physical_card
-
-	#保存所有网卡驱动
-	for ((i=0;i<${#total_network_cards[@]};i++))
+function verify_negotiate(){
+	for net in ${total_network_cards[@]}
 	do
-		driver[i]=`ethtool -i ${total_network_cards[i]} | grep driver | awk '{print $2}'`
-	done
-
-	#删除重复驱动
-	len=${#driver[@]}
-	#控制循环次数
-	for ((i=0;i<${len}-1;i++))
-	do
-		#与下一个元素比较，直到最后一个相同则删除
-		for ((j=i+1;j<${len};j++))
-		do
-			if [ "${driver[i]}" == "${driver[j]}" ]; then
-				unset driver[i]
-			fi
-		done
-	done
-	
-	for d in ${driver[@]}
-	do
-		if [ ! $d ];then
-			PRINT_LOG "FATAL" "some error or fail with this $d module"
-			fn_writeResultFile "${RESULT_FILE}" "$d module error or fail" "fail"
-			return 1
+		bus_num=`ethtool -i $net | grep bus | awk '{print $2}'`
+		LnkSta=`lspci -s $bus_num -vvv | grep LnkSta: | cut -d " " -f 2`
+		LnkCap=`lspci -s $bus_num -vvv | grep LnkCap: | cut -d " " -f 4`	
+		if [ "$LnkSta" == "$LnkCap" ]
+		#网卡协商正常
+		then 
+			PRINT_LOG "INFO" "$net standard speed is equal to capacity speed."
+			fn_writeResultFile "${RESULT_FILE}" "$net speed negotiate" "pass"
 		else
-			PRINT_LOG "INFO" "This $d module is normal"
-			fn_writeResultFile "${RESULT_FILE}" "$d module normal" "pass"
+			PRINT_LOG "FATAL" "$net standard speed is not equal to capacity speed, please check it."
+			fn_writeResultFile "${RESULT_FILE}" "$net speed negotiate" "fail"
+			return 1
+		fi	
+	done
+}
+#************************************************************#
+# Name        : verify_connect                               #
+# Description : 确认网卡连通性                               #
+# Parameters  : 无                                           #
+#************************************************************#
+function verify_connect(){
+	#打开所有网口
+	for net in ${total_network_cards[@]}
+	do
+		ip link set dev $net up
+		sleep 2
+	done
+	#查找链路正常的网口		
+	for net in ${total_network_cards[@]}
+	do
+		ip a add 10.28.26.18/24 dev $net
+		echo "$net ping test ...."
+		ping 10.28.26.18 -c 5
+		if [ $? -eq 0 ]
+		#网卡连通正常
+		then 
+			PRINT_LOG "INFO" "$net connectivity normal."
+			fn_writeResultFile "${RESULT_FILE}" "$net connectivity" "pass"
+		else
+			PRINT_LOG "FATAL" "$net connectivity isn't normal, please check it."
+			fn_writeResultFile "${RESULT_FILE}" "$net connectivity" "fail"
+			return 1
 		fi
+		ip a del 10.28.26.18/24 dev $net
 	done
 }
 
@@ -133,50 +147,27 @@ function init_env()
 {
     #检查结果文件是否存在，创建结果文件：
     fn_checkResultFile ${RESULT_FILE}
-
+    
     #root用户执行
     if [ `whoami` != 'root' ]
     then
-        PRINT_LOG "WARN" " You must be root user "
+        PRINT_LOG "WARN" " You must be root user " 
         return 1
     fi
-        find_physical_card
-        verify_network_module
-    #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份
+	find_physical_card
+    #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份 
       #需要安装工具，使用公共函数install_deps，用法：install_deps "${pkgs}"
       #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
 }
 
-
-
 #测试执行
 function test_case()
 {
-    #ethtool查询网口MAC地址
-    #ls=("enp125s0f0" "enp125s0f1" "enp125s0f2" "enp125s0f3" "enp189s0f0" "enp189s0f1")
-    for net in ${total_network_cards[@]}
-    do
-		ethtool -P $net
-		if [ $? -eq 0 ]
-		then
-			PRINT_LOG "INFO" "$net has MAC address."
-			fn_writeResultFile "${RESULT_FILE}" "$net normal" "pass"
-		else
-			PRINT_LOG "FATAL" "$net it can not find MAC address,please check it."
-			fn_writeResultFile "${RESULT_FILE}" "$net no MAC address" "fail"
-		fi
-    done
-
-	ethtool -P xxx
-	if [ $? -eq 0 ]
-	then
-		PRINT_LOG "FATAL" "query successful, please check it."
-		fn_writeResultFile "${RESULT_FILE}" "no device" "fail"
-	else
-		PRINT_LOG "INFO" "no such device xxx."
-		fn_writeResultFile "${RESULT_FILE}" "no device" "pass"
-	fi
-
+	for ((i=1;i<=2;i++))
+	do
+		verify_negotiate
+		verify_connect
+	done
     #检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
     check_result ${RESULT_FILE}
 }
@@ -188,6 +179,7 @@ function clean_env()
     FUNC_CLEAN_TMP_FILE
     #自定义环境恢复实现部分,工具安装不建议恢复
       #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
+
 }
 
 
@@ -199,8 +191,7 @@ function main()
         test_case || test_result="fail"
     fi
     clean_env || test_result="fail"
-    [ "${test_result}" = "pass" ] || return 1
-
+	[ "${test_result}" = "pass" ] || return 1
 }
 
 main $@

@@ -1,7 +1,7 @@
 metadata:
-    name: NIC_BASIC_MAC_003
+    name: NIC_BASIC_MAC_002
     format: "Lava-Test-Shell Test Definition 1.0"
-    description: "Set up different MAC address"
+    description: "MAC address can be modified used ifconfig"
     maintainer:
         - min_shuai@hoperun.com
     scope:
@@ -15,7 +15,7 @@ metadata:
         centos: 1
 run:
     steps:
-        - "cd auto-test/nic/network_test/network_card; ./NIC_BASIC_MAC_003.sh; cd -"
+        - "cd auto-test/nic/network_test/network_card; ./NIC_BASIC_MAC_002.sh; cd -"
 parse:
    pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
    fixupdict:

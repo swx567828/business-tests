@@ -1,7 +1,7 @@
 metadata:
-    name: NIC_BASIC_MAC_003
+    name: X6000_NUMA_001
     format: "Lava-Test-Shell Test Definition 1.0"
-    description: "Set up different MAC address"
+    description: "Numa node test"
     maintainer:
         - min_shuai@hoperun.com
     scope:
@@ -15,7 +15,7 @@ metadata:
         centos: 1
 run:
     steps:
-        - "cd auto-test/nic/network_test/network_card; ./NIC_BASIC_MAC_003.sh; cd -"
+        - "cd auto-test/nic/network_test/network_card; ./X6000_NUMA_001.sh; cd -"
 parse:
    pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
    fixupdict:
