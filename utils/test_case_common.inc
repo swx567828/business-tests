@@ -176,6 +176,19 @@ function PRINT_FILE_TO_LOG()
 }
 
 
+#**************************************************************
+#Name         :FUNC_CLEAN_TMP_FILE                            *
+#Description  :clean script product tmp_file                  *
+#Parameters   :NO                                             *
+#**************************************************************
+function FUNC_CLEAN_TMP_FILE()
+{
+    [ -e "${TMP_CONFIG_FILE}" ] && rm -f "${TMP_CONFIG_FILE}" > /dev/null 2>&1
+    [ -e "${TMP_CONTENT_FILE}" ]&& rm -f "${TMP_CONTENT_FILE}" > /dev/null 2>&1
+    [ -d "${TMP_CONFIG_PATH}" ] && rm -rf "${TMP_CONFIG_PATH}"/tmp* > /dev/null 2>&1
+    return 0
+}
+
 
 #*************************************************************
 # Name        : fn_get_value                                 *
@@ -224,7 +237,7 @@ function fn_writeResultFile()
 }
 
 #*************************************************************
-# Name        : fn_checkResultFile                           *
+# Name        : fn_writeResultFile                           *
 # Description : create result file                           *
 # Parameters  : $1 result file                               *
 #*************************************************************
@@ -264,7 +277,7 @@ function check_result()
 {
     result_file=$1
     PRINT_FILE_TO_LOG "${result_file}"
-    cat ${result_file} | awk -F"=" '{print $2}' | egrep -v "pass"
+    cat ${result_file} | awk -F"=" '{print $2}' | egrep -v pass
     if [ $? -eq 0 ]
 	then
 		PRINT_LOG "FATAL" "Test case <${test_name}>  is fail ,please check it !"
@@ -280,14 +293,62 @@ function check_result()
 #Description  :clean script product tmp_file                 *
 #Parameters   :NO                                            *
 #*************************************************************
-function FUNC_CLEAN_TMP_FILE()
+function clean_tmp_file()
 {
     [ -e "${TMPFILE}" ] && rm -f "${TMPFILE}" > /dev/null 2>&1
     [ -e "${TMPCFG}" ]&& rm -f "${TMPCFG}" > /dev/null 2>&1
-    [ -d "${TMPDIR}" ] && rm -rf "${TMPDIR}" > /dev/null 2>&1
+    [ -d "${TMPDIR}" ] && rm -rf "${TMPDIR}"/tmp* > /dev/null 2>&1
     return 0
 }
 
+function distro_name()
+{
+	distro=""
+	#sys_info=$(uname -a)
+	sys_info=$(cat /etc/os-release | grep PRETTY_NAME)
+
+	if [ "$(echo $sys_info |grep -E 'UBUNTU|Ubuntu|ubuntu')"x != ""x ]; then
+		distro="ubuntu"
+	elif [ "$(echo $sys_info |grep -E 'cent|CentOS|centos')"x != ""x ]; then
+		distro="centos"
+	elif [ "$(echo $sys_info |grep -E 'fed|Fedora|fedora')"x != ""x ]; then
+		distro="fedora"
+	elif [ "$(echo $sys_info |grep -E 'Red Hat|Red')"x != ""x ]; then
+		distro="redhat"
+	elif [ "$(echo $sys_info |grep -E 'DEB|Deb|deb')"x != ""x ]; then
+		distro="debian"
+	elif [ "$(echo $sys_info |grep -E 'OPENSUSE|OpenSuse|opensuse|openSUSE')"x != ""x ]; then
+		distro="opensuse"
+	elif [ "$(echo $sys_info |grep -E 'SUSE|Suse|suse|SUSE')"x != ""x ]; then
+		distro="suse"
+	else
+		distro="ubuntu"
+	fi
+}
+
+
+function fn_install_pkg()
+{
+	pkgs=$1
+	distro_name
+    case "${distro}" in
+        debian|ubuntu)
+        apt-get install -q -y ${pkgs}
+        ;;
+        centos|redhat)
+        yum -e 0 -y install ${pkgs}
+        ;;
+        fedora)
+        dnf -e 0 -y install ${pkgs}
+        ;;
+        opensuse)
+        zypper install -y ${pkgs}
+        ;;
+        *)
+        echo PRINT_LOG "INFO" "Can not install ${pkg}"
+        ;;
+    esac
+}
 
 
 
