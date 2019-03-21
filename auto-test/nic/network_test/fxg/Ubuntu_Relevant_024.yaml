@@ -1,11 +1,11 @@
 metadata:
-    name: NIC_BASIC_Negotiation_001
+    name: Ubuntu_Relevant_024 
     format: "Lava-Test-Shell Test Definition 1.0"
-    description: "Numa node test"
+    description: "Net port numbers"
     maintainer:
         - min_shuai@hoperun.com
     scope:
-        - minshuai
+        - fxg
     os:
         - centos  
     devices:
@@ -15,7 +15,7 @@ metadata:
         centos: 1
 run:
     steps:
-        - "cd auto-test/nic/network_test/network_card; ./NIC_BASIC_Negotiation_001.sh; cd -"
+        - "cd auto-test/nic/network_test/fxg; ./Ubuntu_Relevant_024.sh; cd -"
 parse:
    pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
    fixupdict:
