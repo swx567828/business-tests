@@ -5,9 +5,9 @@ metadata:
     maintainer:
         - hongxin_228@163.com
     os:
-        - suse 
+        - centos
     scope:
-        - source 
+        - source
     devices:
         - d06
         - d05
