@@ -42,19 +42,30 @@ test_result="pass"
 
 function test_cpunum()
 {
-	#进入系统查询cpu核数是否是96
-	cpu_number=`cat /proc/cpuinfo |grep processor |sort -u|wc -l`
-	echo "cpu core number:$cpu_number"
-	if [ $cpu_number -eq 96 ]
+	ver=dmesg |grep D06|grep -I "dmistr:"|awk '{print $NF}'
+	if [ $ver = " " ]
 	then
-		echo "Cpu core Number is  96"
-		PRINT_LOG "FATAL" "Cpu core Number is  96"
-        fn_writeResultFile "${RESULT_FILE}" "Check_008" "pass"
-	else		
-		echo "Cpu core Number is not 96"	
-        PRINT_LOG "INFO" "Cpu core Number is not 96"
-        fn_writeResultFile "${RESULT_FILE}" "Check_008" "fail"		
-    fi	
+		echo "It is not D06"
+		PRINT_LOG "INFO" "It is not D06"
+		fn_writeResultFile "${RESULT_FILE}" "It is not D06" "pass"	
+	else
+		echo "It is D06"
+		#进入系统查询cpu核数是否是96
+		cpu_number=`cat /proc/cpuinfo |grep processor |sort -u|wc -l`
+		echo "cpu core number:"$cpu_number
+		if [ $cpu_number -eq 96 ]
+		then
+			echo "Cpu core Number is  96"
+			PRINT_LOG "FATAL" "Cpu core Number is  96"
+			fn_writeResultFile "${RESULT_FILE}" "Check_008" "pass"
+		else		
+			echo "Cpu core Number is not 96"	
+			PRINT_LOG "INFO" "Cpu core Number is not 96"
+			fn_writeResultFile "${RESULT_FILE}" "Check_008" "fail"		
+		fi
+	fi
+
+		
 	#检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
 	check_result ${RESULT_FILE}
 
