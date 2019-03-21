@@ -7,7 +7,7 @@ metadata:
     os: 
         - centos  
     scope: 
-         - nic
+         - czfdg
      devices: 
          - d06 
          - d05 
