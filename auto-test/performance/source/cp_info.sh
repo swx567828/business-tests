@@ -1,24 +1,24 @@
 #!/bin/bash
 
 #*****************************************************************************************
-# *用例名称：Suse_Relevant_005                                                         
-# *用例功能: 查看suse系统是否支持qperf                                                 
-# *作者：mwx547872                                                                       
-# *完成时间：2019-2-21                                                                   
-# *前置条件：                                                                            
-#   1、预装suse操作系统                                                                   
-# *测试步骤：                                                                               
-#   1、 进入suse操作系统。         
-#   2.  使用zypper info 命令检查是否有qperf安装包        
-# *测试结果：                                                                            
-#  可以检查到qperf安装包                                                         
+# *用例名称：Suse_Relevant_005
+# *用例功能: 查看suse系统是否支持qperf
+# *作者：mwx547872
+# *完成时间：2019-2-21
+# *前置条件：
+#   1、预装suse操作系统
+# *测试步骤：
+#   1、 进入suse操作系统。
+#   2.  使用zypper info 命令检查是否有qperf安装包
+# *测试结果：
+#  可以检查到qperf安装包
 #*****************************************************************************************
 
 #加载公共函数
-. ../../utils/test_case_common.inc
-. ../../utils/error_code.inc
-. ../../utils/sys_info.sh
-. ../../utils/sh-test-lib		
+. ../../../utils/test_case_common.inc
+. ../../../utils/error_code.inc
+. ../../../utils/sys_info.sh
+. ../../../utils/sh-test-lib
 
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
@@ -36,12 +36,12 @@ test_result="pass"
 function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
-	fn_checkResultFile ${RESULT_FILE}
+fn_checkResultFile ${RESULT_FILE}
         if [ `whoami` != 'root' ]; then
             echo "You must be the superuser to run this script" > $2
             exit 1
         fi
-          
+
           sys_info=$(cat /etc/os-release |grep PRETTY_NAME)
           if [ "$(echo $sys_info |grep "SUSE")" != ""x ];then
                PRINT_LOG "INFO" "system is suse"
@@ -54,27 +54,27 @@ function init_env()
 #测试执行
 function test_case()
 {
-	check_result ${RESULT_FILE}
+        check_result ${RESULT_FILE}
         package=`zypper info coreutils|grep "Name"|awk -F ':' '{print $2}'|sed 's/ //g'`
         if [ $package = "coreutils" ];then
              PRINT_LOG "INFO" "suse have cp package"
-	     print_info 0 cp-package
+             print_info 0 cp-package
         else
              PRINT_LOG "FAIAL" "suse no have cp package"
-	     print_info 1 cp-package
+             print_info 1 cp-package
         fi
-       
+
 
 }
 
 function main()
 {
-	init_env 
+        init_env
         test_case
-	
+
 }
 
-main 
+main
 #ret=$?
 #LAVA平台上报结果接口，勿修改
 #lava-test-case "$test_name" --result ${test_result}
