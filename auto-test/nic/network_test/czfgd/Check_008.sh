@@ -44,7 +44,7 @@ function test_cpunum()
 {
 	#进入系统查询cpu核数是否是96
 	cpu_number=`cat /proc/cpuinfo |grep processor |sort -u|wc -l`
-	echo "cpu的核数是:$cpu_number"
+	echo "cpu core number:$cpu_number"
 	if [ $cpu_number -eq 96 ]
 	then
 		echo "Cpu core Number is  96"
