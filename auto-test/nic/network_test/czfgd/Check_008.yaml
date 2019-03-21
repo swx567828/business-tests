@@ -7,9 +7,8 @@ metadata:
     os: 
         - centos  
     scope: 
-         - czfdg
-     devices: 
-         - d06 
+         - czfgd
+     devices:  
          - d05 
      level: 1 
      totalcase: 
