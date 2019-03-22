@@ -42,9 +42,9 @@ test_result="pass"
 
 function test_cpunum()
 {
-	ver=dmesg |grep D06|grep -I "dmistr:"|awk '{print $NF}'
-	if [ $ver = " " ]
-	then
+	
+	if ! dmesg|grep D06
+    then
 		echo "It is not D06"
 		PRINT_LOG "INFO" "It is not D06"
 		fn_writeResultFile "${RESULT_FILE}" "It is not D06" "pass"	
