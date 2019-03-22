@@ -43,20 +43,20 @@ function init_env()
         fi
 
           sys_info=$(cat /etc/os-release |grep PRETTY_NAME)
-          if [ "$(echo $sys_info |grep "SUSE")" != ""x ];then
-               PRINT_LOG "INFO" "system is suse"
-          else
-               PRINT_LOG "FAIAL" "systemm is not suse"
-               exit 1
-          fi
+         # if [ "$(echo $sys_info |grep "SUSE")" != ""x ];then
+          #     PRINT_LOG "INFO" "system is suse"
+          #else
+           #    PRINT_LOG "FAIAL" "systemm is not suse"
+           #    exit 1
+          #fi
 }
 
 #测试执行
 function test_case()
 {
         check_result ${RESULT_FILE}
-        package=`zypper info qperf|grep "Name"|awk -F ':' '{print $2}'|sed 's/ //g'`
-        if [ $package = "qperf" ];then
+        package=`yum info qperf|grep "Name"|awk -F ':' '{print $2}'|sed 's/ //g'`
+        if [ "$package" = "qperf" ];then
              PRINT_LOG "INFO" "suse have qperf package"
              print_info 0 qperf-package
         else
