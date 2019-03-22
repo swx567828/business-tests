@@ -82,16 +82,19 @@ function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
 	fn_checkResultFile ${RESULT_FILE}
-
-	pkgs="ethtool"
-	PRINT_LOG "INFO" "Start to install $pkgs"
-	install_deps_ex "${pkgs}"
-	if [ $? -ne 0 ]
+  
+	if ! ethtool --version
 	then
-		PRINT_LOG "FATAL" "Install $pkgs fail"
-		fn_writeResultFile "${RESULT_FILE}" "Install $pkgs" "fail"
+		pkgs="ethtool"
+		PRINT_LOG "INFO" "Start to install $pkgs"
+		install_deps_ex "${pkgs}"
+		if [ $? -ne 0 ]
+		then
+			PRINT_LOG "FATAL" "Install $pkgs fail"
+			fn_writeResultFile "${RESULT_FILE}" "Install $pkgs" "fail"
+		fi
 	fi
-	
+
 	#root用户执行
 	if [ `whoami` != 'root' ]
 	then
