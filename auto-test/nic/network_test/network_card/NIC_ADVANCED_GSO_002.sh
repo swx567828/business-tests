@@ -1,4 +1,6 @@
-C_ADVANCED_GSO_002              
+#!/bin/bash
+
+#用例名称：NIC_ADVANCED_GSO_002              
 #用例功能：业务网口GSO设置查询测试
 #作者：cwx615603                   
 #完成时间：2019-2-12                        
@@ -80,6 +82,7 @@ function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
 	fn_checkResultFile ${RESULT_FILE}
+  
 	if ! ethtool --version
 	then
 		pkgs="ethtool"
@@ -91,6 +94,7 @@ function init_env()
 			fn_writeResultFile "${RESULT_FILE}" "Install $pkgs" "fail"
 		fi
 	fi
+
 	#root用户执行
 	if [ `whoami` != 'root' ]
 	then

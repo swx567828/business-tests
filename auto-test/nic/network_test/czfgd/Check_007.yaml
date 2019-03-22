@@ -1,28 +1,28 @@
 
+
 metadata:
-    name: transparent_page
+    name: Check_007
     format: "Lava-Test-Shell Test Definition 1.0"
-    description: "Transparent page mode setting"
+    description: "dmidecode  CPU Speed"
     maintainer:
-        - ding_yu1@hoperun.com
+        - xue_xing@hoperun.com
     scope:
-        - performance
+        - czfgd
     os:
         - centos
     devices:
         - d05
-        - d06
     level: 1
-    totalcase: 
-        centos: 2
+    totalcase:
+        centos: 1
 
 run:
     steps:
-        - "cd auto-test/performance/transparent_page; ./transparent_page.sh ; cd -"
-
+        - "cd auto-test/nic/network_test/czfgd; ./Check_007.sh; cd -"
 parse:
     pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
     fixupdict:
         FAIL: fail
         PASS: pass
+
 
