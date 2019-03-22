@@ -55,7 +55,7 @@ function init_env()
 function test_case()
 {
         check_result ${RESULT_FILE}
-        package=`yum info cp|grep "Name"|awk -F ':' '{print $2}'|sed 's/ //g'`
+        package=`yum info coreutils|grep "Name"|awk -F ':' '{print $2}'|sed 's/ //g'|head -1`
         if [ "$package" = "cp" ];then
         #     PRINT_LOG "INFO" "suse have cp package"
              print_info 0 cp-package
