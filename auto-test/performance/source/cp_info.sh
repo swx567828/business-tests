@@ -57,7 +57,7 @@ function test_case()
         check_result ${RESULT_FILE}
         package=`yum info coreutils|grep "Name"|awk -F ':' '{print $2}'|sed 's/ //g'|head -1`
         echo $package
-        if [ "$package" = "cp" ];then
+        if [ "$package" = "coreutils" ];then
         #     PRINT_LOG "INFO" "suse have cp package"
              print_info 0 cp-package
         else
