@@ -1,6 +1,4 @@
-#!/bin/bash
-
-#用例名称：NIC_ADVANCED_GSO_002              
+C_ADVANCED_GSO_002              
 #用例功能：业务网口GSO设置查询测试
 #作者：cwx615603                   
 #完成时间：2019-2-12                        
@@ -82,16 +80,17 @@ function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
 	fn_checkResultFile ${RESULT_FILE}
-
-	pkgs="ethtool"
-	PRINT_LOG "INFO" "Start to install $pkgs"
-	install_deps_ex "${pkgs}"
-	if [ $? -ne 0 ]
+	if ! ethtool --version
 	then
-		PRINT_LOG "FATAL" "Install $pkgs fail"
-		fn_writeResultFile "${RESULT_FILE}" "Install $pkgs" "fail"
+		pkgs="ethtool"
+		PRINT_LOG "INFO" "Start to install $pkgs"
+		install_deps_ex "${pkgs}"
+		if [ $? -ne 0 ]
+		then
+			PRINT_LOG "FATAL" "Install $pkgs fail"
+			fn_writeResultFile "${RESULT_FILE}" "Install $pkgs" "fail"
+		fi
 	fi
-	
 	#root用户执行
 	if [ `whoami` != 'root' ]
 	then
