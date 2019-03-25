@@ -40,7 +40,14 @@ fi
 #安装依赖包
 pkgs="make gcc gcc-c++"
 install_deps "${pkgs}"
-print_info $? install_deps
+if [ $? -eq 0 ];then
+	echo "install deps-package pass"
+
+else
+	echo "install deps-package failed"
+
+fi
+
 
 #获取测试套压缩文件
 if [ -d "1620check/" ];then
