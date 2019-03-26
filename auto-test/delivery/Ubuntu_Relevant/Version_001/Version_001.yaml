@@ -17,7 +17,7 @@ metadata:
 
 run:
     steps:
-        - "cd auto-test/delivery/Ubuntu_Relevant/Version_001; ./Version_001;.sh; cd -"
+        - "cd auto-test/delivery/Ubuntu_Relevant/Version_001; ./Version_001.sh; cd -"
 
 parse:
     pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
