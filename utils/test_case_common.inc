@@ -279,13 +279,13 @@ function check_result()
     PRINT_FILE_TO_LOG "${result_file}"
     cat ${result_file} | awk -F"=" '{print $2}' | egrep -v pass
     if [ $? -eq 0 ]
-	then
-		PRINT_LOG "FATAL" "Test case <${test_name}>  is fail ,please check it !"
-		return 1
-	else
-		PRINT_LOG "INFO" "Test case <${test_name}> is success."
-		return 0
-	fi
+    then
+        PRINT_LOG "FATAL" "Test case <${test_name}>  is fail ,please check it !"
+        return 1
+    else
+        PRINT_LOG "INFO" "Test case <${test_name}> is success."
+        return 0
+    fi
 }
 
 #*************************************************************
@@ -301,54 +301,132 @@ function clean_tmp_file()
     return 0
 }
 
-function distro_name()
+#*************************************************************
+# Name        : fn_install_pkg                           *
+# Description : install different distribution package                  *
+# Parameters  : $1 packages                               *
+# Parameter   : $2 times                               *
+#*************************************************************
+fn_install_pkg()
 {
-	distro=""
-	#sys_info=$(uname -a)
-	sys_info=$(cat /etc/os-release | grep PRETTY_NAME)
-
-	if [ "$(echo $sys_info |grep -E 'UBUNTU|Ubuntu|ubuntu')"x != ""x ]; then
-		distro="ubuntu"
-	elif [ "$(echo $sys_info |grep -E 'cent|CentOS|centos')"x != ""x ]; then
-		distro="centos"
-	elif [ "$(echo $sys_info |grep -E 'fed|Fedora|fedora')"x != ""x ]; then
-		distro="fedora"
-	elif [ "$(echo $sys_info |grep -E 'Red Hat|Red')"x != ""x ]; then
-		distro="redhat"
-	elif [ "$(echo $sys_info |grep -E 'DEB|Deb|deb')"x != ""x ]; then
-		distro="debian"
-	elif [ "$(echo $sys_info |grep -E 'OPENSUSE|OpenSuse|opensuse|openSUSE')"x != ""x ]; then
-		distro="opensuse"
-	elif [ "$(echo $sys_info |grep -E 'SUSE|Suse|suse|SUSE')"x != ""x ]; then
-		distro="suse"
-	else
-		distro="ubuntu"
-	fi
-}
-
-
-function fn_install_pkg()
-{
-	pkgs=$1
-	distro_name
-    case "${distro}" in
+    pkgs=$1
+    exec_times=$2
+    tmp_file=${TMPDIR}/tmp.file
+    [ -f ${tmp_file} ] && :>${tmp_file}
+    
+    os_type=`cat /etc/os-release | grep -w ID | awk -F"=" '{print $2}' | tr '[:upper:]' '[:lower:]'`   
+    if [ ${os_type} = \"suse\" ] || [ ${os_type} = "suse" ] || [ ${os_type} = \"sles\" ] || [ ${os_type} = "sles" ]
+    then
+        os_type=suse
+    elif [ ${os_type} = \"ubuntu\" ] || [ ${os_type} = "ubuntu" ]
+    then
+        os_type=ubuntu
+    elif [ ${os_type} = \"redhat\" ] || [ ${os_type} = "redhat" ] || [ ${os_type} = \"rhel\" ] || [ ${os_type} = "rhel" ]
+    then
+        os_type=redhat
+    elif [ ${os_type} = \"centos\" ] || [ ${os_type} = "centos" ] 
+    then
+        os_type=centos
+    elif [ ${os_type} = \"debian\" ] || [ ${os_type} = "debian" ]
+    then
+        os_type=debian
+    fi
+    
+    echo "os_type=$os_type"
+    case "${os_type}" in    
         debian|ubuntu)
-        apt-get install -q -y ${pkgs}
+        cmd="apt-get install -q -y ${pkgs}"
+        fn_exec_times "${cmd}" "${exec_times}" "${tmp_file}"
         ;;
         centos|redhat)
-        yum -e 0 -y install ${pkgs}
+        cmd="yum -e 0 -y install ${pkgs}" 
+        fn_exec_times "${cmd}" "${exec_times}" "${tmp_file}"
         ;;
         fedora)
-        dnf -e 0 -y install ${pkgs}
+        cmd="dnf -e 0 -y install ${pkgs}"
+        fn_exec_times "${cmd}" "${exec_times}" "${tmp_file}"
         ;;
-        opensuse)
-        zypper install -y ${pkgs}
+        opensuse|suse)
+        cmd="zypper install -y ${pkgs}"
+        fn_exec_times "${cmd}" "${exec_times}" "${tmp_file}"
         ;;
         *)
-        echo PRINT_LOG "INFO" "Can not install ${pkg}"
+         PRINT_LOG "INFO" "Can not install ${pkg}"
+        #echo "Can not install ${pkg}"
         ;;
     esac
+    cat ${tmp_file} | grep "No package * available"  || PRINT_LOG "WARN" "Some of package install fail "
+    PRINT_FILE_TO_LOG "${tmp_file}"
 }
 
+function fn_exec_times()
+{
+    cmd=$1
+    exec_times=$2
+    tmp_file=$3
+    for i in $( seq $exec_times )
+    do
+        eval $cmd >> ${tmp_file} 2>&1 && break
+    done
+    
+}
+
+#*************************************************************
+# Name        : fn_get_os_type                               *
+# Description : get distribution os type                     *
+# Parameters  : $1 get os pramater type                      *                            
+#*************************************************************
+function fn_get_os_type()
+{
+    os_type=$1
+    [ -n "${os_type}" ] || PRINT_LOG "WARN" "Useage:fn_get_os_type os_type "
+    os_type=`cat /etc/os-release | grep -w ID | awk -F"=" '{print $2}' | tr '[:upper:]' '[:lower:]'`
+    
+    if [ ${os_type} = \"suse\" ] || [ ${os_type} = "suse" ] || [ ${os_type} = \"sles\" ] || [ ${os_type} = "sles" ]
+    then
+        os_type=suse
+    elif [ ${os_type} = \"ubuntu\" ] || [ ${os_type} = "ubuntu" ]
+    then
+        os_type=ubuntu
+    elif [ ${os_type} = \"redhat\" ] || [ ${os_type} = "redhat" ] || [ ${os_type} = \"rhel\" ] || [ ${os_type} = "rhel" ]
+    then
+        os_type=redhat
+    elif [ ${os_type} = \"centos\" ] || [ ${os_type} = "centos" ] 
+    then
+        os_type=centos
+    elif [ ${os_type} = \"debian\" ] || [ ${os_type} = "debian" ]
+    then
+        os_type=debian
+    fi
+    #echo "os_type=$os_type"
+    eval  $1=$os_type
+}
+
+#获取插网线的网口
+function fn_get_physical_network_card() 
+{
+
+    [ -n "$1" ] || PRINT_LOG "Usage:parameter 1 is not none .eg: fn_get_physical_network_card physical_network_interface_list"
+    declare -a physical_network_card
+    
+    network_interface_list=`ip a | grep ^[[:digit:]] | egrep -v "lo|vi|br" | awk -F":" '{print $2}'`
+    j=0
+    for i in ${network_interface_list}
+    do
+        ip link set dev ${i} up
+        status=`ethtool ${i} | grep "Link detected" | awk -F":" '{print $2}'`
+        if [ ${status} = yes ]
+        then
+            physical_network_card[j]=$i
+            let j++
+            PRINT_LOG "INFO" "physical_network_card[$j]=$i"
+        else
+            PRINT_LOG "WARN" "$i status is down"
+        fi    
+    done
+    
+    eval $1='${physical_network_card[@]}'
+
+}
 
 
