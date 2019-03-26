@@ -39,14 +39,6 @@ function init_env()
 {
 	#检查结果文件是否存在，创建结果文件：
     fn_checkResultFile ${RESULT_FILE}
-	dmidecode| grep "Product Name" | grep "D06"
-	if [ $? -eq 0 ]
-	then 
-		PRINT_LOG "INFO" "this env is D06,Check env is ok . "
-	else
-		PRINT_LOG "WARN" "this env is not D06,please check it. "
-		return 1
-	fi
 }
 
 
