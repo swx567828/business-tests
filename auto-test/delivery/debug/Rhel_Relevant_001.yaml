@@ -1,4 +1,3 @@
-
 metadata:
     name: Rhel-Relevant
     format: "Lava-Test-Shell Test Definition 1.0"
@@ -19,6 +18,10 @@ metadata:
     level: 1
     totalcase:
         ubuntu: 1
+        centos: 1
+        debian: 1
+        suse: 1
+        redhat: 1
 
 run:
     steps:
