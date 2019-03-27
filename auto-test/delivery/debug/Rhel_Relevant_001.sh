@@ -51,7 +51,7 @@ function test_case()
         case $distro_type in
            "ubuntu" | "debian" )
           apt-get install gcc -y
-          print_info $? install-gcc
+         # print_info $? install-gcc
           if [ $? -eq 0 ]
           then
               fn_writeResultFile "${RESULT_FILE}" "install-gcc" "pass"
