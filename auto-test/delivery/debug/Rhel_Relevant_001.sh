@@ -150,6 +150,6 @@ function main()
 
 main
 ret=$?
-LAVA平台上报结果接口，勿修改
+#LAVA平台上报结果接口，勿修改
 lava-test-case "$test_name" --result ${test_result}
 exit ${ret}
