@@ -38,7 +38,7 @@ then
 fi
 
 #安装依赖包
-pkgs="wget python make gcc gcc-c++"
+pkgs="g++ wget python make gcc gcc-c++"
 install_deps "${pkgs}"
 if [ $? -eq 0 ];then
 	echo "install deps-package pass"
