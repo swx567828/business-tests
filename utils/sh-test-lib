@@ -221,6 +221,8 @@ dist_name() {
         dist="fedora"
     elif [ -f /etc/centos-release ]; then
         dist="centos"
+    elif [ -f /etc/redhat-release ]; then
+       dist="redhat"
     else
         dist="unknown"
         warn_msg "Unsupported distro: cannot determine distribution name"
@@ -263,7 +265,7 @@ install_deps() {
 		sleep 2
 	    done
             ;;
-          centos)
+          centos|redhat)
             # shellcheck disable=SC2086
 	    while (( $i < 5 )); do
 		yum -e 0 -y install ${pkgs}
@@ -332,7 +334,7 @@ remove_deps() {
           debian|ubuntu)
             apt-get remove -y ${pkgs}
             ;;
-          centos)
+          centos|redhat)
             yum -y remove ${pkgs}
             ;;
           fedora)
