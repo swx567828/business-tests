@@ -4,17 +4,24 @@ metadata:
     format: "Lava-Test-Shell Test Definition 1.0"
     description: "Fault tolerance test on the network interface"
     maintainer:
-        - xue_xing@hoperun.com
+        - fan_xingguo@hoperun.com
     scope:
         - nic
     os:
         - centos
+        - suse
+        - redhat
+        - debian
+        - ubuntu  
     devices:
         - d05
     level: 1
     totalcase:
         centos: 1
-
+        suse: 1
+        redhat: 1
+        debian: 1
+        ubuntu: 1
 run:
     steps:
         - "cd auto-test/nic/network_test/network_card; ./Check_012.sh; cd -"
