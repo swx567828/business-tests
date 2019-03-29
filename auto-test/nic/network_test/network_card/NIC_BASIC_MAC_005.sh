@@ -75,11 +75,12 @@ function find_physical_card(){
 		for ((j=0;j<${len_virtual};j++))
 		do
 			if [ "${total_network_cards[i]}" == "${virtual_network_cards[j]}" ]; then
-				unset total_network_cards[i]
-				total_network_cards=(`echo ${total_network_cards[@]}`)
+				unset total_network_cards[i]				
+				break
 			fi
 		done	
 	done
+	total_network_cards=(`echo ${total_network_cards[@]}`)
 	
 	for net in ${virtual_network_cards[@]}
 	do
@@ -96,13 +97,13 @@ function find_physical_card(){
 function verify_network_module(){
 	#查找所有物理网卡
 	#find_physical_card
-
 	#保存所有网卡驱动
+	
 	for ((i=0;i<${#total_network_cards[@]};i++))
 	do
 		driver[i]=`ethtool -i ${total_network_cards[i]} | grep driver | awk '{print $2}'`
 	done
-
+	
 	#删除重复驱动
 	len=${#driver[@]}
 	#控制循环次数
@@ -113,10 +114,11 @@ function verify_network_module(){
 		do
 			if [ "${driver[i]}" == "${driver[j]}" ]; then
 				unset driver[i]
-				driver=(`echo ${driver[@]}`)
+				break
 			fi
 		done
 	done
+	driver=(`echo ${driver[@]}`)
 	
 	for d in ${driver[@]}
 	do
