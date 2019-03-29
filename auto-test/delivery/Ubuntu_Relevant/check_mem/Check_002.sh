@@ -42,6 +42,8 @@ function init_env()
 #测试执行
 function test_case()
 {
+     pkgs="dmidecode"
+    install_deps "${pkgs}"
 	#查询总内存大小是否512G
     dan=1024
     danwei=`dmidecode -t 19 | grep Size|awk '{print $4}'`
@@ -65,12 +67,14 @@ function test_case()
     echo "$num"
     if [ $num -eq 16 ]
     then
-	echo "nei cun is 16"
+	PRINT_LOG "INFO" "num is 16"
+        fn_writeResultFile "${RESULT_FILE}" "num" "pass"
     else
-	echo "nei cun is no 16"
+	PRINT_LOG "FATAL" "num is not 16"
+        fn_writeResultFile "${RESULT_FILE}" "num" "fail"
     fi
-    mem=`dmidecode -t memory | grep -E "Size.*GB|Size.*MB" | awk '{print  $2 $3}'`
-    echo "$mem"
+#    mem=`dmidecode -t memory | grep -E "Size.*GB|Size.*MB" | awk '{print  $2 $3}'`
+#    echo "$mem"
 	
 	#检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
     check_result ${RESULT_FILE}

@@ -42,7 +42,9 @@ function init_env()
 
 #测试执行
 function test_case()
-{
+{      
+         pkgs="dmidecode"
+         install_deps "${pkgs}"
 	#查询内存条数量是否16
         mem_num=`dmidecode -t memory | grep -E "Size.*GB|Size.*MB" | awk '{print  $2 $3}'|wc -l`
   #   mem_num=`dmidecode|grep -A16 "Memory Device$"|grep Size|grep 32 |wc -l`
