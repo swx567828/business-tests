@@ -6,12 +6,12 @@
 # *作者：mwx547872
 # *完成时间：2019-2-21
 # *前置条件：
-#   1、预装suse操作系统
+#   1、预装linux操作系统
 # *测试步骤：
-#   1、 进入suse操作系统。
-#   2.  使用zypper info 命令检查是否有qperf安装包
+#   1、 进入linux操作系统。
+#   2.  使用安装命令安装java包
 # *测试结果：
-#  可以检查到qperf安装包
+#  可以安装java包
 #*****************************************************************************************
 set -x
 #加载公共函数
@@ -51,39 +51,33 @@ function test_case()
         case $distro_type in
            "ubuntu" | "debian" )
           apt-get install javacc -y
-        #  print_info $? install-gcc
           if [ $? -eq 0 ]
           then
               fn_writeResultFile "${RESULT_FILE}" "install-gcc" "pass"
               PRINT_LOG "INFO" "install gcc package is success"
- #             print_info 0 install-gcc
           else
               fn_writeResultFile "${RESULT_FILE}" "install-gcc" "fail"
               PRINT_LOG "INFO" "install gcc package is fail"
-  #           print_info 1 install-gcc
           fi
           ;;
 
 
          "centos" | "redhat" )
-          echo 111111111111111111111111
           yum install java-1.8.0-openjdk -y
           if [ $? -eq 0 ]
           then
-               fn_writeResultFile "${RESULT_FILE}" "install-gcc" "pass"
+               fn_writeResultFile "${RESULT_FILE}" "install-java" "pass"
 
-              PRINT_LOG "INFO" "install gcc package is success"
+              PRINT_LOG "INFO" "install java package is success"
 
-             # print_info 0 install-gcc
 
           else
 
-              fn_writeResultFile "${RESULT_FILE}" "install-gcc" "fail"
+              fn_writeResultFile "${RESULT_FILE}" "install-java" "fail"
 
-              PRINT_LOG "INFO" "install gcc package is fail"
+              PRINT_LOG "INFO" "install java package is fail"
 
 
-             # print_info 1 install-gcc
 
 
           fi
@@ -95,20 +89,18 @@ function test_case()
 
           then
 
-               fn_writeResultFile "${RESULT_FILE}" "install-gcc" "pass"
+               fn_writeResultFile "${RESULT_FILE}" "install-java" "pass"
 
-              PRINT_LOG "INFO" "install gcc package is success"
+              PRINT_LOG "INFO" "install java package is success"
 
-             # print_info 0 install-gcc
 
           else
 
-              fn_writeResultFile "${RESULT_FILE}" "install-gcc" "fail"
+              fn_writeResultFile "${RESULT_FILE}" "install-java" "fail"
 
-              PRINT_LOG "INFO" "install gcc package is fail"
+              PRINT_LOG "INFO" "install java package is fail"
 
 
-#              print_info 1 install-gcc
            fi
            ;;
 
@@ -121,7 +113,7 @@ function test_case()
 function clean_env()
 {
        FUNC_CLEAN_TMP_FILE
-     	case $distro_type in
+     case $distro_type in
        "ubuntu|debian")
            apt-get remove javacc  -y
         ;;

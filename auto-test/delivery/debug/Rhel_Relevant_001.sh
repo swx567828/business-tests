@@ -36,7 +36,7 @@ test_result="pass"
 function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
-#	fn_checkResultFile ${RESULT_FILE}
+fn_checkResultFile ${RESULT_FILE}
         if [ `whoami` != 'root' ]; then
             echo "You must be the superuser to run this script" > $2
             exit 1
@@ -46,27 +46,23 @@ function init_env()
 #测试执行
 function test_case()
 {
-	check_result ${RESULT_FILE}
+check_result ${RESULT_FILE}
         fn_get_os_type distro_type
         case $distro_type in
            "ubuntu" | "debian" )
           apt-get install gcc -y
-         # print_info $? install-gcc
           if [ $? -eq 0 ]
           then
               fn_writeResultFile "${RESULT_FILE}" "install-gcc" "pass"
               PRINT_LOG "INFO" "install gcc package is success"
- #             print_info 0 install-gcc
           else
               fn_writeResultFile "${RESULT_FILE}" "install-gcc" "fail"
               PRINT_LOG "INFO" "install gcc package is fail"
-  #           print_info 1 install-gcc
           fi
           ;;
 
 
          "centos" | "redhat" )
-          echo 111111111111111111111111
           yum install gcc -y
           if [ $? -eq 0 ]
           then
@@ -74,7 +70,6 @@ function test_case()
 
               PRINT_LOG "INFO" "install gcc package is success"
 
-             # print_info 0 install-gcc
 
           else
 
@@ -83,7 +78,6 @@ function test_case()
               PRINT_LOG "INFO" "install gcc package is fail"
 
 
-             # print_info 1 install-gcc
 
 
           fi
@@ -99,7 +93,6 @@ function test_case()
 
               PRINT_LOG "INFO" "install gcc package is success"
 
-             # print_info 0 install-gcc
 
           else
 
@@ -108,7 +101,6 @@ function test_case()
               PRINT_LOG "INFO" "install gcc package is fail"
 
 
-#              print_info 1 install-gcc
            fi
            ;;
 
