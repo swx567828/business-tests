@@ -15,8 +15,8 @@ elif [ "$(echo $sys_info |grep -E 'fed|Fedora|fedora')"x != ""x ]; then
     distro="fedora"
 elif [ "$(echo $sys_info |grep -E 'DEB|Deb|deb')"x != ""x ]; then
     distro="debian"
-elif [ "$(echo $sys_info |grep -E 'OPENSUSE|OpenSuse|opensuse|openSUSE')"x != ""x ]; then
-    distro="opensuse"
+elif [ "$(echo $sys_info |grep -E 'SUSE|OpenSuse|opensuse|openSUSE')"x != ""x ]; then
+    distro="suse"
 elif [ "$(echo $sys_info|grep -E 'redhat|Red')"x != ""x ]; then
     distro="redhat"
 else
