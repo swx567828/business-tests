@@ -227,8 +227,8 @@ dist_name() {
         dist="unknown"
         warn_msg "Unsupported distro: cannot determine distribution name"
     fi
-    if [ $dist == "opensuse-leap" ];then
-		 dist=opensuse
+    if [ $dist == "rhel" ];then
+		 dist=redhat
 	fi
     # convert dist to lower case
     dist=$(echo ${dist} | tr '[:upper:]' '[:lower:]')
