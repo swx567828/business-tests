@@ -22,8 +22,7 @@
 . ../../../../utils/test_case_common.inc
 . ../../../../utils/sys_info.sh
 . ../../../../utils/sh-test-lib
-#. ./utils/error_code.inc
-#. ./utils/test_case_common.inc
+
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
 #创建log目录
@@ -56,6 +55,7 @@ function test_case()
 	ifconfig $i inet6 del 2001:da8:2004:1000:202:116:160:41 up
 	ifconfig $i inet6 add 2001:da8:2004:1000:202:116:160:41 up
         sleep 5
+        ifconfig $i |grep 2001:da8:2004:1000:202:116:160:41
 	if [ $? -ne 0 ]
 	then
 		echo "set ipv6 error"

@@ -19,8 +19,7 @@
 . ../../../../utils/test_case_common.inc
 . ../../../../utils/sys_info.sh
 . ../../../../utils/sh-test-lib
-#. ./utils/error_code.inc
-#. ./utils/test_case_common.inc
+
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
 #创建log目录
@@ -35,11 +34,29 @@ RESULT_FILE=${TMPDIR}/${test_name}.result
 #var_name1="xxxx"
 #var_name2="xxxx"
 test_result="pass"
+  
+#预置条件
+function init_env()
+{
+    #检查结果文件是否存在，创建结果文件：
+    fn_checkResultFile ${RESULT_FILE}
+
+    #root用户执行
+    if [ `whoami` != 'root' ]
+    then
+        PRINT_LOG "WARN" " You must be root user "
+        return 1
+    fi
+
+    #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份
+      #需要安装工具，使用公共函数install_deps，用法：install_deps "${pkgs}"
+      #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
+}
 
 #测试
 function test_case()
 {
-        pkgs="net-tools"
+        pkgs="net-tools ethtool"
         install_deps "${pkgs}"
 #查找存在GE网口
 
@@ -113,23 +130,6 @@ function test_case()
        
 }
 
-#预置条件
-function init_env()
-{
-    #检查结果文件是否存在，创建结果文件：
-    fn_checkResultFile ${RESULT_FILE}
-    
-    #root用户执行
-    if [ `whoami` != 'root' ]
-    then
-        PRINT_LOG "WARN" " You must be root user " 
-        return 1
-    fi
-
-    #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份 
-      #需要安装工具，使用公共函数install_deps，用法：install_deps "${pkgs}"
-      #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
-}
 
 #恢复环境
 function clean_env()
