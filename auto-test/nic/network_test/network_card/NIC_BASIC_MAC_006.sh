@@ -73,11 +73,12 @@ function find_physical_card(){
 		for ((j=0;j<${len_virtual};j++))
 		do
 			if [ "${total_network_cards[i]}" == "${virtual_network_cards[j]}" ]; then
-				unset total_network_cards[i]
-				total_network_cards=(`echo ${total_network_cards[@]}`)
+				unset total_network_cards[i]				
+				break
 			fi
 		done	
 	done
+	total_network_cards=(`echo ${total_network_cards[@]}`)
 	
 	for net in ${virtual_network_cards[@]}
 	do
