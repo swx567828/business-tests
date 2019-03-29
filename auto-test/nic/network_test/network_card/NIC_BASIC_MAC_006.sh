@@ -54,6 +54,7 @@ function find_physical_card(){
 	do
 		if [ ! -d "/sys/class/net/${total_network_cards[i]}" ]; then
 			unset total_network_cards[i]
+			total_network_cards=(`echo ${total_network_cards[@]}`)
 		fi	
 	done
 
@@ -62,6 +63,7 @@ function find_physical_card(){
 	do
 		if [ ! -d "/sys/devices/virtual/net/${virtual_network_cards[i]}" ]; then
 			unset virtual_network_cards[i]
+			virtual_network_cards=(`echo ${virtual_network_cards[@]}`)
 		fi	
 	done
 
@@ -72,15 +74,15 @@ function find_physical_card(){
 		do
 			if [ "${total_network_cards[i]}" == "${virtual_network_cards[j]}" ]; then
 				unset total_network_cards[i]
+				total_network_cards=(`echo ${total_network_cards[@]}`)
 			fi
 		done	
 	done
-
+	
 	for net in ${virtual_network_cards[@]}
 	do
 		PRINT_LOG "INFO" "please check this $net port"
-	done
-	
+	done	
 }
 #************************************************************#
 # Name        : check_mac                                        #
