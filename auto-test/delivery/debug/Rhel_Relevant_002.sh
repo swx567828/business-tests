@@ -53,11 +53,11 @@ function test_case()
           apt-get install javacc -y
           if [ $? -eq 0 ]
           then
-              fn_writeResultFile "${RESULT_FILE}" "install-gcc" "pass"
-              PRINT_LOG "INFO" "install gcc package is success"
+              fn_writeResultFile "${RESULT_FILE}" "install-java" "pass"
+              PRINT_LOG "INFO" "install java package is success"
           else
-              fn_writeResultFile "${RESULT_FILE}" "install-gcc" "fail"
-              PRINT_LOG "INFO" "install gcc package is fail"
+              fn_writeResultFile "${RESULT_FILE}" "install-java" "fail"
+              PRINT_LOG "INFO" "install java package is fail"
           fi
           ;;
 
