@@ -1,24 +1,24 @@
 #!/bin/bash
 
 #*****************************************************************************************
-# *用例名称：Suse_Relevant_005                                                         
-# *用例功能: 查看系统是否能安装java                                                 
-# *作者：mwx547872                                                                       
-# *完成时间：2019-2-21                                                                   
-# *前置条件：                                                                            
-#   1、预装suse操作系统                                                                   
-# *测试步骤：                                                                               
-#   1、 进入suse操作系统。         
-#   2.  使用zypper info 命令检查是否有qperf安装包        
-# *测试结果：                                                                            
-#  可以检查到qperf安装包                                                         
+# *用例名称：Suse_Relevant_005
+# *用例功能: 查看系统是否能安装java
+# *作者：mwx547872
+# *完成时间：2019-2-21
+# *前置条件：
+#   1、预装linux操作系统
+# *测试步骤：
+#   1、 进入linux操作系统。
+#   2.  使用安装命令安装java包
+# *测试结果：
+#  可以安装java包
 #*****************************************************************************************
 set -x
 #加载公共函数
 . ../../../utils/test_case_common.inc
 . ../../../utils/error_code.inc
 #. ../../../utils/sys_info.sh
-. ../../../utils/sh-test-lib		
+. ../../../utils/sh-test-lib
 
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
@@ -51,77 +51,69 @@ function test_case()
         case $distro_type in
            "ubuntu" | "debian" )
           apt-get install javacc -y
-        #  print_info $? install-gcc
           if [ $? -eq 0 ]
           then
-              fn_writeResultFile "${RESULT_FILE}" "install-gcc" "pass"
-              PRINT_LOG "INFO" "install gcc package is success"
- #             print_info 0 install-gcc
+              fn_writeResultFile "${RESULT_FILE}" "install-java" "pass"
+              PRINT_LOG "INFO" "install java package is success"
           else
-              fn_writeResultFile "${RESULT_FILE}" "install-gcc" "fail"
-              PRINT_LOG "INFO" "install gcc package is fail"
-  #           print_info 1 install-gcc
+              fn_writeResultFile "${RESULT_FILE}" "install-java" "fail"
+              PRINT_LOG "INFO" "install java package is fail"
           fi
           ;;
-          
-         
+
+
          "centos" | "redhat" )
-          echo 111111111111111111111111
           yum install java-1.8.0-openjdk -y
           if [ $? -eq 0 ]
           then
-               fn_writeResultFile "${RESULT_FILE}" "install-gcc" "pass"
-          
-              PRINT_LOG "INFO" "install gcc package is success"
-          
-             # print_info 0 install-gcc
+               fn_writeResultFile "${RESULT_FILE}" "install-java" "pass"
+
+              PRINT_LOG "INFO" "install java package is success"
+
 
           else
-         
-              fn_writeResultFile "${RESULT_FILE}" "install-gcc" "fail"
-             
-              PRINT_LOG "INFO" "install gcc package is fail"
+
+              fn_writeResultFile "${RESULT_FILE}" "install-java" "fail"
+
+              PRINT_LOG "INFO" "install java package is fail"
 
 
-             # print_info 1 install-gcc
 
 
           fi
           ;;
 
           "suse")
-           zypper install -y java-1_8_0-openjdk 
+           zypper install -y java-1_8_0-openjdk
           if [ $? -eq 0 ]
 
           then
 
-               fn_writeResultFile "${RESULT_FILE}" "install-gcc" "pass"
+               fn_writeResultFile "${RESULT_FILE}" "install-java" "pass"
 
-              PRINT_LOG "INFO" "install gcc package is success"
+              PRINT_LOG "INFO" "install java package is success"
 
-             # print_info 0 install-gcc
 
           else
 
-              fn_writeResultFile "${RESULT_FILE}" "install-gcc" "fail"
+              fn_writeResultFile "${RESULT_FILE}" "install-java" "fail"
 
-              PRINT_LOG "INFO" "install gcc package is fail"
+              PRINT_LOG "INFO" "install java package is fail"
 
 
-#              print_info 1 install-gcc
            fi
            ;;
 
          esac
          check_result ${RESULT_FILE}
-           
-       
+
+
 
 }
 function clean_env()
 {
        FUNC_CLEAN_TMP_FILE
-     	case $distro_type in
+     case $distro_type in
        "ubuntu|debian")
            apt-get remove javacc  -y
         ;;
@@ -129,7 +121,7 @@ function clean_env()
            yum remove -y java-1.8.0-openjdk
         ;;
       "suse")
-           zypper remove -y java-1_8_0-openjdk 
+           zypper remove -y java-1_8_0-openjdk
        ;;
     esac
 
@@ -137,19 +129,19 @@ function clean_env()
 
 function main()
 {
-	init_env|| test_result="fail"
+init_env|| test_result="fail"
         if [ ${test_result} = "pass" ]
         then
-              
+
         test_case || test_result="fail"
        fi
         clean_env || test_result="fail"
         [ "${test_result}" = "pass" ] || return 1
-	
+
 }
 
-main 
+main
 ret=$?
-LAVA平台上报结果接口，勿修改
+#LAVA平台上报结果接口，勿修改
 lava-test-case "$test_name" --result ${test_result}
 exit ${ret}
