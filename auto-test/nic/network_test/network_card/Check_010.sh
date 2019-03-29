@@ -19,8 +19,10 @@
 . ../../../../utils/error_code.inc
 . ../../../../utils/test_case_common.inc
 . ../../../../utils/sys_info.sh
-. ../../../../utils/sh-test-lib      
+. ../../../../utils/sh-test-lib     
 
+. ./error_code.inc
+. ./test_case_common.inc
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
 #创建log目录
@@ -33,7 +35,7 @@ RESULT_FILE=${TMPDIR}/${test_name}.result
 TMPCFG=${TMPDIR}/${test_name}.tmp_cfg
 test_result="pass"
 
-nework_card0=enp125s0f0
+nework_card=enp125s0f1
 
 #预置条件
 function init_env()
@@ -49,24 +51,27 @@ function init_env()
 function test_case()
 {
     #测试步骤实现部分
-    ethtool ${nework_card0} > ${TMPFILE} 2>&1 
+    fn_get_physical_network_card physical_network_interface_list
+    network_card=`echo ${physical_network_interface_list} | awk -F"[= ]+" '{print $2}'`
+    PRINT_LOG "INFO" "network_card=$network_card"
+    ethtool ${network_card} > ${TMPFILE} 2>&1 
     if [ $? -eq 0 ]
     then
-        PRINT_LOG "INFO" "Exec <ethtool ${nework_card0}> cmd is ok"
-        fn_writeResultFile "${RESULT_FILE}" "${nework_card0}" "pass"
+        PRINT_LOG "INFO" "Exec <ethtool ${network_card}> cmd is ok"
+        fn_writeResultFile "${RESULT_FILE}" "${network_card}" "pass"
         cat ${TMPFILE} | grep -i "Port" | grep "FIBRE" 
         if [ $? -eq 0 ]
         then
-            PRINT_LOG "INFO" "Get ${nework_card0} type is  FIBRE "
-            fn_writeResultFile "${RESULT_FILE}" "enp125s0f0" "pass"
+            PRINT_LOG "INFO" "Get ${network_card} type is  FIBRE "
+            fn_writeResultFile "${RESULT_FILE}" "enp125s0f1" "pass"
         else
-            PRINT_LOG "INFO" "Get ${nework_card0} type is not FIBRE "
-            fn_writeResultFile "${RESULT_FILE}" "enp125s0f0" "fail"
+            PRINT_LOG "INFO" "Get ${network_card} type is not FIBRE "
+            fn_writeResultFile "${RESULT_FILE}" "enp125s0f1" "fail"
         fi
         
     else
-        PRINT_LOG "WARN" "Exec <ethtool ${nework_card0}> cmd is fail"   
-        fn_writeResultFile "${RESULT_FILE}" "${nework_card0}" "fail"
+        PRINT_LOG "WARN" "Exec <ethtool ${network_card}> cmd is fail"   
+        fn_writeResultFile "${RESULT_FILE}" "${network_card}" "fail"
     fi
     #检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
     check_result ${RESULT_FILE}
