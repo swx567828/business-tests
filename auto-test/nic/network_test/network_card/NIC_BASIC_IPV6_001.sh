@@ -38,8 +38,22 @@ RESULT_FILE=${TMPDIR}/${test_name}.result
 #var_name2="xxxx"
 test_result="pass"
 
+ #预置条件
+function init_env()
+{
+    #检查结果文件是否存在，创建结果文件：
+    fn_checkResultFile ${RESULT_FILE}
 
-
+    #root用户执行
+    if [ `whoami` != 'root' ]
+    then
+        PRINT_LOG "WARN" " You must be root user "
+        return 1
+    fi
+    #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份
+      #需要安装工具，使用公共函数install_deps，用法：install_deps "${pkgs}"
+      #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
+}
 
 #测试执行
 function test_case()
@@ -81,24 +95,6 @@ function test_case()
    done
 #检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
 	check_result ${RESULT_FILE}
-}
-
-
-#预置条件
-function init_env()
-{
-    #检查结果文件是否存在，创建结果文件：
-    fn_checkResultFile ${RESULT_FILE}
-    
-    #root用户执行
-    if [ `whoami` != 'root' ]
-    then
-        PRINT_LOG "WARN" " You must be root user " 
-        return 1
-    fi
-    #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份 
-      #需要安装工具，使用公共函数install_deps，用法：install_deps "${pkgs}"
-      #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
 }
 
 
