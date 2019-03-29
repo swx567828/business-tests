@@ -37,14 +37,25 @@ function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
 	fn_checkResultFile ${RESULT_FILE}
-	
+	fn_get_os_type distro_type
+        case $distro_type in
+             "ubuntu" | "debian" )
+             apt-get install dmidecode -y
+              ;;
+             "centos" | "redhat" )
+              yum install dmidecode -y
+             ;;
+             "suse")
+              zypper install -y dmidecode
+              ;;
+esac
+
 }
 
 #测试执行
 function test_case()
 {      
-         pkgs="dmidecode"
-         install_deps "${pkgs}"
+
 	#查询内存条数量是否16
         mem_num=`dmidecode -t memory | grep -E "Size.*GB|Size.*MB" | awk '{print  $2 $3}'|wc -l`
   #   mem_num=`dmidecode|grep -A16 "Memory Device$"|grep Size|grep 32 |wc -l`

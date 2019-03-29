@@ -36,14 +36,25 @@ function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
 	fn_checkResultFile ${RESULT_FILE}
+        fn_get_os_type distro_type
+        case $distro_type in
+             "ubuntu" | "debian" )
+             apt-get install dmidecode -y
+              ;;
+             "centos" | "redhat" )
+              yum install dmidecode -y
+             ;;
+             "suse")
+              zypper install -y dmidecode
+              ;;
+esac
 	
 }
 
 #测试执行
 function test_case()
 {
-     pkgs="dmidecode"
-    install_deps "${pkgs}"
+
 	#查询总内存大小是否512G
     dan=1024
     danwei=`dmidecode -t 19 | grep Size|awk '{print $4}'`
