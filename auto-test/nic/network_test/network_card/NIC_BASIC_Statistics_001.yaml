@@ -5,7 +5,7 @@ metadata:
     maintainer:
         - min_shuai@hoperun.com
     scope:
-        - liubeijie
+        - nic
     os:
         - centos  
         - debian
