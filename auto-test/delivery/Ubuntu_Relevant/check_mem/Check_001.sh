@@ -114,7 +114,7 @@ function main()
 		test_case || test_result = "fail"
 	fi
 	clean_env || test_result = "fail"
-	[ "$test_result" = "pass" ] && return 1
+	[ "$test_result" = "pass" ] || return 1
 }
 
 main $@
