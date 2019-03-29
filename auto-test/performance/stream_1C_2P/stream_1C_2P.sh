@@ -38,8 +38,18 @@ then
 fi
 
 #安装依赖包
-pkgs="g++ wget python make gcc gcc-c++"
-install_deps "${pkgs}"
+case "$distro" in
+    centos|redhat)
+	yum install python wget gcc make gcc gcc-c++ -y
+	;;
+    debian|ubuntu)
+	apt install wget gcc g++ make -y
+	;;
+    suse)
+	zyyper install -y wget gcc gcc-c+ make  python
+	;;
+esac
+
 if [ $? -eq 0 ];then
 	echo "install deps-package pass"
 
