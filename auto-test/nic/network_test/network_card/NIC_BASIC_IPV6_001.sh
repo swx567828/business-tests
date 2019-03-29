@@ -53,13 +53,24 @@ function init_env()
     #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份
       #需要安装工具，使用公共函数install_deps，用法：install_deps "${pkgs}"
       #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
+      fn_get_os_type distro_type
+        case $distro_type in
+             "ubuntu" | "debian" )
+              apt-get install net-tools -y
+              ;;
+             "centos" | "redhat" )
+              yum install net-tools -y
+             ;;
+             "suse")
+              zypper install -y net-tools
+              ;;
+esac 
 }
 
 #测试执行
 function test_case()
 {
-    pkgs="net-tools"
-    install_deps "${pkgs}" 
+    
 #遍历所有网口，配置ipv6，通信正常
     net=`ifconfig|grep 'BROADCAST,RUNNING,MULTICAST'|egrep -v "vir|br"|awk -F: '{print $1}'`
     echo "$net"
