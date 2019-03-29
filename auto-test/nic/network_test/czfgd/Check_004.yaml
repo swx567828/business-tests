@@ -1,26 +1,27 @@
+
 metadata:
-    name: Version_001
+    name: Check_004
     format: "Lava-Test-Shell Test Definition 1.0"
-    description: "Check Docker software package"
+    description: "test memory Hynix"
     maintainer:
-        - fanxinguo@hoperun.com
+        - xue_xing@hoperun.com
     scope:
-        - delivery
+        - czfgd
     os:
-        - ubuntu
+        - centos
     devices:
         - d05
-        - d06
     level: 1
-    totalcase: 
-        ubuntu: 1
+    totalcase:
+        centos: 1
 
 run:
     steps:
-        - "cd auto-test/delivery/Ubuntu_Relevant/Version_001; ./Version_001.sh; cd -"
-
+        - "cd auto-test/nic/network_test/czfgd; ./Check_004.sh; cd -"
 parse:
     pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
     fixupdict:
         FAIL: fail
         PASS: pass
+
+

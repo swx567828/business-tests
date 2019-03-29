@@ -16,10 +16,10 @@
 # 可以正常配置VLAN，配置VLAN IP ,成功删除VALN
 ################################################################################
 #加载公共函数
-. ../../utils/test_case_common.inc
-. ../../utils/error_code.inc
-. ../../utils/sys_info.sh
-. ../../utils/sh-test-lib
+. ../../../utils/test_case_common.inc
+. ../../../utils/error_code.inc
+. ../../../utils/sys_info.sh
+. ../../../utils/sh-test-lib
 
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
@@ -48,11 +48,11 @@ function init_env(){
 ##********************************************#
 # Name          : get _network_name           #
 # Description   : 获取网卡名字                #
-                                              #                        
+                                              #
 #*********************************************#
 function get_network_name()
 {
-  
+
   ip link|grep "BROADCAST" > 1.log
   cat 1.log
   i=0
@@ -61,7 +61,7 @@ function get_network_name()
     str=`echo $line|awk '{print $2}'|sed 's/://g'|grep "e"`
     #echo $str
     echo $i
-    array[$i]=${str} 
+    array[$i]=${str}
     echo ${array[$i]}
     let i+=1
   done <  1.log
@@ -73,22 +73,22 @@ function get_network_name()
 
 ##*********************************************#
 # Name        : config_network_Vlan            #
-# Description : 给所有网口配置VLAN             # 
+# Description : 给所有网口配置VLAN             #
 # Parameter   ： 无                            #
 #**********************************************#
 function config_network_vlan()
-{ 
+{
        for var in ${array[@]}
-      
+
       do
          echo $var
-         
+
          vconfig add $var 100
          ip address add dev $var.100 192.168.1.26/24 dev $var.100
          vconfig add $var 200
          ip address add dev $var.200 192.168.1.27/24 dev $var.100
-         
-      done 
+
+      done
 
       print_info $? config_network
 }
