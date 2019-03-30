@@ -21,8 +21,8 @@
 . ../../../../utils/sys_info.sh
 . ../../../../utils/sh-test-lib     
 
-#. ./error_code.inc
-#. ./test_case_common.inc
+. ./error_code.inc
+. ./test_case_common.inc
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
 #创建log目录
@@ -35,7 +35,6 @@ RESULT_FILE=${TMPDIR}/${test_name}.result
 TMPCFG=${TMPDIR}/${test_name}.tmp_cfg
 test_result="pass"
 
-nework_card=enp125s0f1
 
 #预置条件
 function init_env()
@@ -83,7 +82,7 @@ function fn_get_on_board_network_card()
 
 		}
 	}
-	eval $1='$on_board_list[@]}'
+	eval $1='${on_board_list[@]}'
 }
 
 
@@ -93,94 +92,50 @@ function test_case()
     #测试步骤实现部分
 	
     fn_get_on_board_network_card on_board_network_interface_list
-    network_card=`echo ${on_board_network_interface_list} | awk -F"[ ]+" '{print $1}'`
-    PRINT_LOG "INFO" "network_card=$network_card"
-    ethtool ${network_card} > ${TMPFILE} 2>&1 
-    if [ $? -eq 0 ]
-    then
-        PRINT_LOG "INFO" "Exec <ethtool ${network_card}> cmd is ok"
-        fn_writeResultFile "${RESULT_FILE}" "${network_card}" "pass"
-        cat ${TMPFILE} | grep -i "Port" | grep "FIBRE" 
+    
+    local count_tp=0
+    local count_fb=0
+    local count=0
+    for network_card in ${on_board_network_interface_list}
+    do
+        ethtool ${network_card} >${TMPFILE} 2>&1
+        PRINT_FILE_TO_LOG "${TMPFILE}"
+        cat ${TMPFILE} | grep -i "port" | grep -w "TP"
         if [ $? -eq 0 ]
         then
-            PRINT_LOG "INFO" "Get ${network_card} type is  FIBRE "
-            fn_writeResultFile "${RESULT_FILE}" "${network_card}" "pass"
-        else
-            PRINT_LOG "INFO" "Get ${network_card} type is not FIBRE "
-            fn_writeResultFile "${RESULT_FILE}" "${network_card}" "fail"
-        fi
-        
-    else
-        PRINT_LOG "WARN" "Exec <ethtool ${network_card}> cmd is fail"   
-        fn_writeResultFile "${RESULT_FILE}" "${network_card}" "fail"
-    fi
-	
-    network_card=`echo ${on_board_network_interface_list} | awk -F"[= ]+" '{print $2}'`
-    PRINT_LOG "INFO" "network_card=$network_card"
-    ethtool ${network_card} > ${TMPFILE} 2>&1
-    if [ $? -eq 0 ]
-    then
-        PRINT_LOG "INFO" "Exec <ethtool ${network_card}> cmd is ok"
-        fn_writeResultFile "${RESULT_FILE}" "${network_card}" "pass"
-        cat ${TMPFILE} | grep -i "Port" | grep "FIBRE"
+            let count_tp++
+            PRINT_LOG "INFO" "count num of TP type is ${count_tp}"
+        fi 
+        cat ${TMPFILE} | grep -i "port" | grep -w "FIBRE"
         if [ $? -eq 0 ]
         then
-            PRINT_LOG "INFO" "Get ${network_card} type is  FIBRE "
-            fn_writeResultFile "${RESULT_FILE}" "${network_card}" "pass"
-        else
-            PRINT_LOG "INFO" "Get ${network_card} type is not FIBRE "
-            fn_writeResultFile "${RESULT_FILE}" "${network_card}" "fail"
+            let count_fb++
+            PRINT_LOG "INFO" "count num of fb type is ${count_fb}"
         fi
-
-    else
-        PRINT_LOG "WARN" "Exec <ethtool ${network_card}> cmd is fail"
-        fn_writeResultFile "${RESULT_FILE}" "${network_card}" "fail"
-    fi
-
-	network_card=`echo ${on_board_network_interface_list} | awk -F"[ ]+" '{print $3}'`
-    PRINT_LOG "INFO" "network_card=$network_card"
-    ethtool ${network_card} > ${TMPFILE} 2>&1
-    if [ $? -eq 0 ]
+        let count++
+        [ ${count} = 4 ] && break
+    done
+    
+    if [ ${count_tp} = 2 ]
     then
-        PRINT_LOG "INFO" "Exec <ethtool ${network_card}> cmd is ok"
-        fn_writeResultFile "${RESULT_FILE}" "${network_card}" "pass"
-        cat ${TMPFILE} | grep -i "Port" | grep -w "MII"
-        if [ $? -eq 0 ]
-        then
-            PRINT_LOG "INFO" "Get ${network_card} type is  MII "
-            fn_writeResultFile "${RESULT_FILE}" "${network_card}" "pass"
-        else
-            PRINT_LOG "INFO" "Get ${network_card} type is not MII "
-            fn_writeResultFile "${RESULT_FILE}" "${network_card}" "fail"
-        fi
-
+        PRINT_LOG "INFO" "Get front 4 network_card  have ${count_tp} is  FIBRE "
+        fn_writeResultFile "${RESULT_FILE}" "count_${count_tp}" "pass"
     else
-        PRINT_LOG "WARN" "Exec <ethtool ${network_card}> cmd is fail"
-        fn_writeResultFile "${RESULT_FILE}" "${network_card}" "fail"
+        PRINT_LOG "FATAL" "Get front 4 network_card  have ${count_tp} is  FIBRE "
+        fn_writeResultFile "${RESULT_FILE}" "count_${count_tp}" "fail"
     fi
 
-	
-	network_card=`echo ${on_board_network_interface_list} | awk -F"[ ]+" '{print $4}'`
-    PRINT_LOG "INFO" "network_card=$network_card"
-    ethtool ${network_card} > ${TMPFILE} 2>&1
-    if [ $? -eq 0 ]
+    
+    if [ ${count_fb} = 2 ]
     then
-        PRINT_LOG "INFO" "Exec <ethtool ${network_card}> cmd is ok"
-        fn_writeResultFile "${RESULT_FILE}" "${network_card}" "pass"
-        cat ${TMPFILE} | grep -i "Port" | grep -w "MII"
-        if [ $? -eq 0 ]
-        then
-            PRINT_LOG "INFO" "Get ${network_card} type is  MII "
-            fn_writeResultFile "${RESULT_FILE}" "${network_card}" "pass"
-        else
-            PRINT_LOG "INFO" "Get ${network_card} type is not MII "
-            fn_writeResultFile "${RESULT_FILE}" "${network_card}" "fail"
-        fi
-
+        PRINT_LOG "INFO" "Get front 4 network_card  have ${count_tp} is  TP "
+        fn_writeResultFile "${RESULT_FILE}" "count_${count_tp}" "pass"
     else
-        PRINT_LOG "WARN" "Exec <ethtool ${network_card}> cmd is fail"
-        fn_writeResultFile "${RESULT_FILE}" "${network_card}" "fail"
+        PRINT_LOG "FATAL" "Get front 4 network_card  have ${count_tp} is  TP "
+        fn_writeResultFile "${RESULT_FILE}" "count_${count_tp}" "fail"
     fi
+
+
     #检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
     check_result ${RESULT_FILE}
 }
