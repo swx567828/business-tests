@@ -21,8 +21,7 @@
 . ../../../../utils/sys_info.sh
 . ../../../../utils/sh-test-lib     
 
-. ./error_code.inc
-. ./test_case_common.inc
+
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
 #创建log目录
@@ -39,9 +38,9 @@ test_result="pass"
 #预置条件
 function init_env()
 {
-  #检查结果文件是否存在，创建结果文件：
+    #检查结果文件是否存在，创建结果文件：
     fn_checkResultFile ${RESULT_FILE}
-
+    ethtool -h || fn_install_pkg ethtool 3
 }
 
 function fn_get_on_board_network_card()
@@ -118,21 +117,21 @@ function test_case()
     
     if [ ${count_tp} = 2 ]
     then
-        PRINT_LOG "INFO" "Get front 4 network_card  have ${count_tp} is  FIBRE "
-        fn_writeResultFile "${RESULT_FILE}" "count_${count_tp}" "pass"
+        PRINT_LOG "INFO" "Get front 4 network_card  have ${count_tp} is  TP "
+        fn_writeResultFile "${RESULT_FILE}" "count_tp_${count_tp}" "pass"
     else
-        PRINT_LOG "FATAL" "Get front 4 network_card  have ${count_tp} is  FIBRE "
-        fn_writeResultFile "${RESULT_FILE}" "count_${count_tp}" "fail"
+        PRINT_LOG "FATAL" "Get front 4 network_card  have ${count_tp} is  TP "
+        fn_writeResultFile "${RESULT_FILE}" "count_tp_${count_tp}" "fail"
     fi
 
     
     if [ ${count_fb} = 2 ]
     then
-        PRINT_LOG "INFO" "Get front 4 network_card  have ${count_tp} is  TP "
-        fn_writeResultFile "${RESULT_FILE}" "count_${count_tp}" "pass"
+        PRINT_LOG "INFO" "Get front 4 network_card  have ${count_tp} is  FIBRE "
+        fn_writeResultFile "${RESULT_FILE}" "count_fb_${count_tp}" "pass"
     else
-        PRINT_LOG "FATAL" "Get front 4 network_card  have ${count_tp} is  TP "
-        fn_writeResultFile "${RESULT_FILE}" "count_${count_tp}" "fail"
+        PRINT_LOG "FATAL" "Get front 4 network_card  have ${count_tp} is  FIBRE "
+        fn_writeResultFile "${RESULT_FILE}" "count_fb_${count_tp}" "fail"
     fi
 
 
