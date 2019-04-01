@@ -19,7 +19,6 @@
 . ../../../../utils/test_case_common.inc
 . ../../../../utils/sys_info.sh
 . ../../../../utils/sh-test-lib
-. ../../../../utils/sshpasswd.sh
 
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
@@ -30,6 +29,10 @@ mkdir -p ${TMPDIR}
 TMPFILE=${TMPDIR}/${test_name}.tmp
 #存放每个测试步骤的执行结果
 RESULT_FILE=${TMPDIR}/${test_name}.result
+
+#自定义变量区域（可选）
+#var_name1="xxxx"
+#var_name2="xxxx"
 test_result="pass"
 
 #预置条件
@@ -37,29 +40,22 @@ function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
 	fn_checkResultFile ${RESULT_FILE}
+        #root用户执行
+        if [ `whoami` != 'root' ]
+        then
+              PRINT_LOG "WARN" " You must be root user "
+              return 1
+        fi
+        #install
+        fn_install_pkg "dmidecode" 3
 
-
-fn_get_os_type distro_type
-        case $distro_type in
-             "ubuntu" | "debian" )
-             apt-get install dmidecode -y
-              ;;
-             "centos" | "redhat" )
-              yum install dmidecode -y
-             ;;
-             "suse")
-              zypper install -y dmidecode
-              ;;
-esac 	
-}
+}       
 
 
 #测试执行
 function test_case()
 {
-
 	#查询总内存大小是否512G
-#	memory=`free -g|grep Mem|awk '{print $2}'`
     dan=1024
     memory=`dmidecode -t 19 | grep Size|awk '{print $3}'`
     echo "$memory"
@@ -71,26 +67,12 @@ function test_case()
 
     if [ $memory -eq 512 ]
     then
-	PRINT_LOG "INFO" "memory is 512"
-        fn_writeResultFile "${RESULT_FILE}" "memory" "pass"
+	PRINT_LOG "INFO" "$memory is eq 512"
+        fn_writeResultFile "${RESULT_FILE}" "$memory is eq 512" "pass"
     else 
-        PRINT_LOG "FATAL" "memory is not 512"
-        fn_writeResultFile "${RESULT_FILE}" "memory" "fail"
+        PRINT_LOG "FATAL" "$memory is not 512"
+        fn_writeResultFile "${RESULT_FILE}" "$memory is not 512" "fail"
     fi
-
-    num=`dmidecode -t memory | grep -E "Size.*GB|Size.*MB" |wc -l`
-    echo "$num"
-    if [ $num -eq 16 ]
-    then
-	PRINT_LOG "INFO" "num is 16"
-        fn_writeResultFile "${RESULT_FILE}" "$num" "pass"
-    else
-	PRINT_LOG "FATAL" "num is 16"
-        fn_writeResultFile "${RESULT_FILE}" "$num" "fail"
-    fi
-#   mem=`dmidecode -t memory | grep -E "Size.*GB|Size.*MB" | awk '{print  $2 $3}'`
- #  echo "$mem"
-	
 	
 	#检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
     check_result ${RESULT_FILE}
@@ -108,13 +90,13 @@ function clean_env()
 
 function main()
 {
-	init_env || test_result = "fail"
-	if [ "$test_result" = "pass" ]
-	then
-		test_case || test_result = "fail"
-	fi
-	clean_env || test_result = "fail"
-	[ "$test_result" = "pass" ] || return 1
+    init_env || test_result="fail"
+    if [ ${test_result} = "pass" ]
+    then
+        test_case || test_result="fail"
+    fi
+    clean_env || test_result="fail"
+	[ "${test_result}" = "pass" ] || return 1
 }
 
 main $@

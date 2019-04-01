@@ -15,11 +15,11 @@
 #   查询到16根内存条                                                        
 #*****************************************************************************************
 
-#加载公共函数
+#加载公共函数,具体看环境对应的位置修改
 . ../../../../utils/error_code.inc
 . ../../../../utils/test_case_common.inc
 . ../../../../utils/sys_info.sh
-. ../../../../utils/sh-test-lib     
+. ../../../../utils/sh-test-lib
 
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
@@ -30,6 +30,10 @@ mkdir -p ${TMPDIR}
 TMPFILE=${TMPDIR}/${test_name}.tmp
 #存放每个测试步骤的执行结果
 RESULT_FILE=${TMPDIR}/${test_name}.result
+
+#自定义变量区域（可选）
+#var_name1="xxxx"
+#var_name2="xxxx"
 test_result="pass"
 
 #预置条件
@@ -37,18 +41,15 @@ function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
 	fn_checkResultFile ${RESULT_FILE}
-	fn_get_os_type distro_type
-        case $distro_type in
-             "ubuntu" | "debian" )
-             apt-get install dmidecode -y
-              ;;
-             "centos" | "redhat" )
-              yum install dmidecode -y
-             ;;
-             "suse")
-              zypper install -y dmidecode
-              ;;
-esac
+         #root用户执行
+        if [ `whoami` != 'root' ]
+        then
+            PRINT_LOG "WARN" " You must be root user "
+            return 1
+        fi
+        
+        #安装
+        fn_install_pkg "dmidecode" 5
 
 }
 
@@ -58,15 +59,13 @@ function test_case()
 
 	#查询内存条数量是否16
         mem_num=`dmidecode -t memory | grep -E "Size.*GB|Size.*MB" | awk '{print  $2 $3}'|wc -l`
-  #   mem_num=`dmidecode|grep -A16 "Memory Device$"|grep Size|grep 32 |wc -l`
-        echo "$mem_num"
 	if [ $mem_num -eq 16 ]
 	then
-	    PRINT_LOG "INFO" " mem_num"
-            fn_writeResultFile "${RESULT_FILE}" "mem_num" "pass"
+	    PRINT_LOG "INFO" " $mem_num is eq 16"
+            fn_writeResultFile "${RESULT_FILE}" "$mem_num is eq 16" "pass"
 	else 
-            PRINT_LOG "FATAL" " mem_num"
-            fn_writeResultFile "${RESULT_FILE}" "mem_num" "fail"
+            PRINT_LOG "FATAL" " $mem_num is not eq 16"
+            fn_writeResultFile "${RESULT_FILE}" "$mem_num is not eq 16" "fail"
 	fi
 	
 	#检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
@@ -84,12 +83,12 @@ function clean_env()
 
 function main()
 {
-	init_env || test_result = "fail"
-	if [ ${test_result} = "pass" ]
-	then
-		test_case || test_result="fail"
-	fi
-	clean_env || test_result="fail"
+    init_env || test_result="fail"
+    if [ ${test_result} = "pass" ]
+    then
+        test_case || test_result="fail"
+    fi
+    clean_env || test_result="fail"
 	[ "${test_result}" = "pass" ] || return 1
 }
 
@@ -98,3 +97,4 @@ ret=$?
 #LAVA平台上报结果接口，勿修改
 lava-test-case "$test_name" --result ${test_result}
 exit ${ret}
+
