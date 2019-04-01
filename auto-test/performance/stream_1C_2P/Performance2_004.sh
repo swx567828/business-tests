@@ -21,8 +21,23 @@ set -x
 #**********************************************************************************
 
 #加载公共函数,具体看环境对应的位置修改
+. ../../../utils/error_code.inc
+. ../../../utils/test_case_common.inc
 . ../../../utils/sys_info.sh
 . ../../../utils/sh-test-lib      
+
+
+#获取脚本名称作为测试用例名称
+test_name=$(basename $0 | sed -e 's/\.sh//')
+#创建log目录
+TMPDIR=/var/logs_test/temp
+mkdir -p ${TMPDIR}
+#存放脚本处理中间状态/值等
+TMPFILE=${TMPDIR}/${test_name}.tmp
+#存放每个测试步骤的执行结果
+RESULT_FILE=${TMPDIR}/${test_name}.result
+test_result="pass"
+
 
 
 
@@ -30,6 +45,10 @@ set -x
 function init_env()
 {
   
+#检查结果文件是否存在，创建结果文件
+fn_checkResultFile ${RESULT_FILE}
+
+
 #root用户执行
 if [ `whoami` != 'root' ]
 then
@@ -51,10 +70,11 @@ case "$distro" in
 esac
 
 if [ $? -eq 0 ];then
-	echo "install deps-package pass"
-
+    fn_writeResultFile "${RESULT_FILE}" "install-deps" "pass"
+    PRINT_LOG "INFO" "install deps_package is success"
 else
-	echo "install deps-package failed"
+    fn_writeResultFile "${RESULT_FILE}" "install-deps" "fail"
+    PRINT_LOG "INFO" "install deps_package is fail"
 
 fi
 
@@ -64,7 +84,7 @@ if [ -d "1620check/" ];then
 	rm -rf 1620check/
 fi
 
-wget  ${ci_http_addr}/test_dependents/1620check.tar
+wget  http://203.160.91.226:18083/test_dependents/1620check.tar
 tar xf 1620check.tar 
 
 }
@@ -90,20 +110,37 @@ done
 
 #执行脚本run-test.sh
 cd 1620check/specint-ubuntu/
-source run-test.sh > run.log
+source run-test.sh > run.log 2>&1
 cat run.log
 grep "end of file!" run.log
-print_info $? run-test
+if [ $? -eq 0 ];then
+    fn_writeResultFile "${RESULT_FILE}" "run-test" "pass"
+    PRINT_LOG "INFO" "Script run-test executed successfully"
+else
+    fn_writeResultFile "${RESULT_FILE}" "install-deps" "fail"
+    PRINT_LOG "INFO" "Execution script run-test failed"
+
+fi
 
 cd ../
 
 #执行stream-process.py
-python stream-process.py stream-gcc730-static/over_test.log > stream-process.log
+python stream-process.py stream-gcc730-static/over_test.log > stream-process.log 2>&1
 cat stream-process.log
 egrep "1c-result|2P-result" stream-process.log
-print_info $? stream-process
+if [ $? -eq 0 ];then
+    fn_writeResultFile "${RESULT_FILE}" "stream-process" "pass"
+    PRINT_LOG "INFO" "Script stream-process executed successfully"
+else
+    fn_writeResultFile "${RESULT_FILE}" "stream-process" "fail"
+    PRINT_LOG "INFO" "Execution script stream-process failed"
+
+fi
+
+check_result ${RESULT_FILE}
 
 cd ../
+
 }
 
 
@@ -111,18 +148,27 @@ cd ../
 function clean_env()
 {
   rm -rf 1620check.tar
+  rm -rf 1620check/
 }
 
 
 function main()
 {
-    init_env 
-    test_case 
-    clean_env 
+
+init_env|| test_result="fail"
+if [ ${test_result} = "pass" ]
+then
+    test_case || test_result="fail"
+fi
+clean_env || test_result="fail"
+[ "${test_result}" = "pass" ] || return 1
+
 }
 
 main 
-
+ret=$?
+lava-test-case "$test_name" --result ${test_result}
+exit ${ret}
 
 
 
