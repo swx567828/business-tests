@@ -1,8 +1,8 @@
 
 metadata:
-    name: transparent_page
+    name: Performance2_004
     format: "Lava-Test-Shell Test Definition 1.0"
-    description: "Transparent page mode setting"
+    description: "Align the stream performance benchmark parameters"
     maintainer:
         - ding_yu1@hoperun.com
     scope:
@@ -18,15 +18,15 @@ metadata:
         - d06
     level: 1
     totalcase: 
-        centos: 2
-        ubuntu: 2
-        debian: 2
-        redhat: 2
-        suse: 2
+        centos: 1
+        ubuntu: 1
+        debian: 1
+        redhat: 1
+        suse: 1
 
 run:
     steps:
-        - "cd auto-test/performance/transparent_page; ./transparent_page.sh ; cd -"
+        - "cd auto-test/performance/stream_1C_2P; ./Performance2_004.sh; cd -"
 
 parse:
     pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"

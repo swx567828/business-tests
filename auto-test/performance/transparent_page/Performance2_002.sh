@@ -18,16 +18,31 @@ set -x
 #    1 查看到enabled文件内容为：[always] madvise never
 #    2 查看到defrag文件内容为：[always] defer defer+madvise madvise never
 
+
 #加载公共函数,具体看环境对应的位置修改
+. ../../../utils/test_case_common.inc
+. ../../../utils/error_code.inc
 . ../../../utils/sys_info.sh
 . ../../../utils/sh-test-lib      
 
-
+#获取脚本名称作为测试用例名称
+test_name=$(basename $0 | sed -e 's/\.sh//')
+#创建log目录
+TMPDIR=/var/logs_test/temp
+mkdir -p ${TMPDIR}
+#存放脚本处理中间状态/值等
+TMPFILE=${TMPDIR}/${test_name}.tmp
+#存放每个测试步骤的执行结果
+RESULT_FILE=${TMPDIR}/${test_name}.result
+test_result="pass"
 
 
 #预置条件
 function init_env()
 {
+
+#检查结果文件是否存在，创建结果文件
+fn_checkResultFile ${RESULT_FILE}
 
 #root用户执行
 if [ `whoami` != 'root' ]
@@ -48,9 +63,11 @@ echo always > /sys/kernel/mm/transparent_hugepage/enabled
 #查看是否设置成功
 Enable=`cat /sys/kernel/mm/transparent_hugepage/enabled |grep "[always]"`
 if [[ "$Enable" =~ "[always]" ]];then
-	print_info 0 set_enable
+    fn_writeResultFile "${RESULT_FILE}" "set_enable" "pass"
+    PRINT_LOG "INFO" "set enable is success"
 else 
-	print_info 1 set_enable	
+    fn_writeResultFile "${RESULT_FILE}" "set_enable" "fail"
+    PRINT_LOG "FATAL" "set enable is fail"
 fi
 
 
@@ -58,24 +75,35 @@ echo always > /sys/kernel/mm/transparent_hugepage/defrag
 
 Defrag=`cat /sys/kernel/mm/transparent_hugepage/defrag |grep "[always]"`
 if [[ "$Defrag" =~ "[always]" ]];then
-	print_info 0 set_defrag
+    fn_writeResultFile "${RESULT_FILE}" "set_defrag" "pass"
+    PRINT_LOG "INFO" "set defrag is success"
 else
-	print_info 1 set_defrag
+    fn_writeResultFile "${RESULT_FILE}" "set_defrag" "fail"
+    PRINT_LOG "FATAL" "set defrag is fail"
 fi
 
 }
 
 
 
-
 function main()
 {
-    init_env 
-    test_case 
+
+init_env || test_result="fail"
+if [ ${test_result} = "pass" ]
+then
+    test_case || test_result="fail"
+fi
+[ "${test_result}" = "pass" ] || return 1
+
+
 }
 
 main 
-
+ret=$?
+#LAVA平台上报结果接口，勿修改
+lava-test-case "$test_name" --result ${test_result}
+exit ${ret}
 
 
 
