@@ -77,14 +77,16 @@ else
     PRINT_LOG "INFO" "install deps_package is fail"
 
 fi
-
+#透明页模式设置为always
+echo always > /sys/kernel/mm/transparent_hugepage/defrag
+echo always > /sys/kernel/mm/transparent_hugepage/enabled
 
 #获取测试套压缩文件
 if [ -d "1620check/" ];then
 	rm -rf 1620check/
 fi
 
-wget  http://203.160.91.226:18083/test_dependents/1620check.tar
+wget  ${ci_http_addr}/test_dependents/1620check.tar
 tar xf 1620check.tar 
 
 }
