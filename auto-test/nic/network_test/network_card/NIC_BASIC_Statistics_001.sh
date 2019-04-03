@@ -47,7 +47,9 @@ function init_env()
         PRINT_LOG "WARN" " You must be root user "
         return 1
     fi
-
+    
+    #install
+    fn_install_pkg "net-tools ethtool" 2
     #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份
       #需要安装工具，使用公共函数install_deps，用法：install_deps "${pkgs}"
       #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
@@ -56,78 +58,73 @@ function init_env()
 #测试
 function test_case()
 {
-        pkgs="net-tools ethtool"
-        install_deps "${pkgs}"
+
 #查找存在GE网口
-
-	eth=`ip link | grep "state UP" | awk '{ print $2 }' | sed 's/://g'|grep -v vir`
-	echo $eth
-        for network_interface in  $eth
+	network=`ip link | grep "state UP" | awk '{ print $2 }' | sed 's/://g'|egrep -v "vir|br"`
+	echo $network
+        for network_interface in  $network
         do
-             ethtool $network_interface|grep Speed|grep "1000Mb/s"
+             ethtool $network_interface|grep "Supported ports:"|grep "TP"
              if [ $? -eq 0 ]; then
-                 echo "$network_interface" | tee -a tt.txt
+                 echo "$network_interface" | tee -a network.txt
              fi
-         done 
-         en=`cat tt.txt`
-               for j in $en
-                   do
-                      ifconfig $j
-                      ifconfig $j|grep "dropped"
+        done     
+                 for i in `cat network.txt`
+                 do
+                      ifconfig $i 2>&1 |tee iflog.txt
+                      cat iflog.txt|grep "dropped"
                       if [ $? ]
                       then
-                          PRINT_LOG "INFO" "drop"
-                          fn_writeResultFile "${RESULT_FILE}" "drop is have" "pass"
+                          PRINT_LOG "INFO" "$i drop is have"
+                          fn_writeResultFile "${RESULT_FILE}" "$i drop is have" "pass"
                       else
-                          PRINT_LOG "FATAL" "drop"
-                          fn_writeResultFile "${RESULT_FILE}" "drop is not" "fail"
+                          PRINT_LOG "FATAL" "$i drop is not have"
+                          fn_writeResultFile "${RESULT_FILE}" "$i drop is not have" "fail"
                        fi
 
-                      ifconfig $j|grep "overruns"
+                      cat iflog.txt|grep "overruns"
                       if [ $? ]
                       then
-                          PRINT_LOG "INFO" "overruns"
-                          fn_writeResultFile "${RESULT_FILE}" "overruns is have" "pass"
+                          PRINT_LOG "INFO" "$i overruns is have"
+                          fn_writeResultFile "${RESULT_FILE}" "$i overruns is have" "pass"
                       else
-                          PRINT_LOG "FATAL" "overruns"
-                          fn_writeResultFile "${RESULT_FILE}" "overruns is not" "fail"
+                          PRINT_LOG "FATAL" "$i overruns is not have"
+                          fn_writeResultFile "${RESULT_FILE}" "$i overruns is not" "fail"
                        fi
 
-                      ifconfig $j|grep "ether"|awk '{print $2}'
+                      cat iflog.txt|grep "ether"|awk '{print $2}'
                       if [ $? ]
                       then
-                          PRINT_LOG "INFO" "ether"
-                          fn_writeResultFile "${RESULT_FILE}" "ether is have" "pass"
+                          PRINT_LOG "INFO" "$i ether is have"
+                          fn_writeResultFile "${RESULT_FILE}" "$i ether is have" "pass"
                       else
-                          PRINT_LOG "FATAL" "ether"
-                          fn_writeResultFile "${RESULT_FILE}" "ether is not" "fail"
+                          PRINT_LOG "FATAL" "$i ether is not have"
+                          fn_writeResultFile "${RESULT_FILE}" "$i ether is not have" "fail"
                        fi
 
-                      ifconfig $j|grep "inet"|awk '{print $2}'
+                      cat iflog.txt|grep "inet"|awk '{print $2}'
                       if [ $? ]
                       then
-                          PRINT_LOG "INFO" "inet"
-                          fn_writeResultFile "${RESULT_FILE}" "inet is have" "pass"
+                          PRINT_LOG "INFO" "$i inet is have"
+                          fn_writeResultFile "${RESULT_FILE}" "$i inet is have" "pass"
                       else
-                          PRINT_LOG "FATAL" "inet"
-                          fn_writeResultFile "${RESULT_FILE}" "inet is not" "fail"
+                          PRINT_LOG "FATAL" "$i inet is not have"
+                          fn_writeResultFile "${RESULT_FILE}" "$i inet is not have" "fail"
                       fi
-
-
 	          done
+
 # 查找不存在的网口                                 
-	ifconfig xxx 2>&1 |tee -a kk.txt
+	ifconfig xxx 2>&1 |tee kk.txt
 	cat kk.txt |grep "Device not found"
 	if [ $? ];then
-           PRINT_LOG "INFO" "XX is"
-           fn_writeResultFile "${RESULT_FILE}" "device is have" "pass"
+           PRINT_LOG "INFO" "XX is true"
+           fn_writeResultFile "${RESULT_FILE}" "device is have info" "pass"
 	else
-           PRINT_LOG "FATAL" "XX"
-           fn_writeResultFile "${RESULT_FILE}" "device" "fail"
+           PRINT_LOG "FATAL" "XX is not true"
+           fn_writeResultFile "${RESULT_FILE}" "device is not have info" "fail"
 
-        fi
-        check_result ${RESULT_FILE}
-       
+    fi
+    check_result ${RESULT_FILE}       
 }
 
 
@@ -138,14 +135,13 @@ function clean_env()
     FUNC_CLEAN_TMP_FILE
     #自定义环境恢复实现部分,工具安装不建议恢复
       #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
-
+    rm -rf kk.txt iflog.txt network.txt
 }
-
 
 function main()
 {
     init_env || test_result="fail"
-    if [ ${test_result} = 'pass' ]
+    if [ ${test_result} = "pass" ]
     then
         test_case || test_result="fail"
     fi
