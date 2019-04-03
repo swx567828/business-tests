@@ -65,7 +65,7 @@ case "$distro" in
 	apt install wget gcc g++ make -y
 	;;
     suse)
-	zypper install -y wget gcc gcc-c+ make  python
+	zypper install -y wget gcc gcc-c++ make  python
 	;;
 esac
 
