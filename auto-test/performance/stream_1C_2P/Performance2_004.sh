@@ -59,13 +59,13 @@ fi
 #安装依赖包
 case "$distro" in
     centos|redhat)
-	yum install python wget gcc make gcc gcc-c++ -y
+	yum install python wget make gcc gcc-c++ -y
 	;;
     debian|ubuntu)
 	apt install wget gcc g++ make -y
 	;;
     suse)
-	zyyper install -y wget gcc gcc-c+ make  python
+	zypper install -y wget gcc gcc-c+ make  python
 	;;
 esac
 
