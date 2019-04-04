@@ -24,7 +24,7 @@ metadata:
         ubuntu: 1
 run:
     steps:
-        - "cd auto-test/system/hardware/bios; ./Version_005.sh; cd -"
+        - "cd auto-test/system/hardware/bios; chmod 777 Version_005.sh;./Version_005.sh; cd -"
 parse:
     pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
     fixupdict:
