@@ -1,0 +1,35 @@
+metadata:
+    name: Rhel-Relevant-001
+    format: "Lava-Test-Shell Test Definition 1.0"
+    description: "Check gcc software package"
+    maintainer:
+        - hongxin_228@163.com
+    scope:
+        - delivery
+    os:
+        - ubuntu
+        - centos
+        - debian
+        - suse
+        - redhat
+    devices:
+        - d05
+        - d06
+    level: 1
+    totalcase:
+        ubuntu: 1
+        centos: 1
+        debian: 1
+        suse: 1
+        redhat: 1
+
+run:
+    steps:
+        - "cd auto-test/delivery/Software_configuration/Rhel_Relevant_check;./Rhel_Relevant_001.sh; cd -"
+
+parse:
+    pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
+    fixupdict:
+        FAIL: fail
+        PASS: pass
+

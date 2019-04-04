@@ -1,0 +1,25 @@
+metadata:
+    name: NIC_ADVANCED_VLAN_002
+    format: "boost-Test-Shell Test Definition 1.0"
+    description: "boost is a c++ lib"
+    maintainer:
+        - hongxin_228@163.com
+    os:
+        - centos
+    scope:
+        - nic
+    devices:
+        - d06
+        - d05
+    level: 1
+    totalcase:
+            centos: 3
+
+run:
+    steps:
+        - "cd auto-test/nic/nic_advanced_function/nic_advanced_VLAN; ./NIC_ADVANCED_VLAN_002.sh; cd -"
+parse:
+   pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
+   fixupdict:
+       FAIL: fail
+       PASS: pass

@@ -1,0 +1,5 @@
+[2019-04-04 10:55:35] [95520] Check sysstat is fail 
+[2019-04-04 10:55:35] [95520] Print <./logs/temp/check_version_sysstat.result>
+[2019-04-04 10:55:36] [95520] sysstat=fail
+[2019-04-04 10:55:36] [95520] ERROR: [Line-283] Test case <check_version_sysstat>  is fail ,please check it !
+[2019-04-04 10:55:37] [95520] end of running test case<check_version_sysstat>
