@@ -1,0 +1,30 @@
+metadata:
+    name: New_System_016
+    format: "Lava-Test-Shell Test Definition 1.0"
+    description: "reboot -f强制重启测试"
+    maintainer:
+        - dengtao21@hisilicon.com
+    scope:
+        - delivery
+    os:
+        - ubuntu
+        - centos
+        - redhat
+        - debian
+        - opensuse
+    devices:
+        - d05
+        - d06
+    level: 1
+    totalcase: 
+        ubuntu: 1
+
+run:
+    steps:
+        - "cd auto-test/system/system_test; ./New_System_016.sh; cd -"
+
+parse:
+    pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
+    fixupdict:
+        FAIL: fail
+        PASS: pass
