@@ -1,0 +1,34 @@
+metadata:
+    name: New_PCIE_021
+    format: "Lava-Test-Shell Test Definition 1.0"
+    description: "PCIE设备重置测试-SAS"
+    maintainer:
+        - dengtao21@hisilicon.com
+    scope:
+        - delivery
+    os:
+        - ubuntu
+        - centos
+        - redhat
+        - debian
+        - suse
+    devices:
+        - d05
+        - d06
+    level: 1
+    totalcase: 
+        ubuntu: 1
+        centos: 1
+        redhat: 1
+        debian: 1
+        suse: 1
+
+run:
+    steps:
+        - "cd auto-test/system/Module_test/PCIE; ./New_PCIE_021.sh; cd -"
+
+parse:
+    pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
+    fixupdict:
+        FAIL: fail
+        PASS: pass
