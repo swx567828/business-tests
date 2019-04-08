@@ -51,6 +51,7 @@ check_result ${RESULT_FILE}
         case $distro_type in
            "ubuntu" | "debian" )
              apt-get install ufw -y
+			 apt-get install expect -y
               EXPECT << EOF
 			  set timeout 100
               spawn ufw enable
