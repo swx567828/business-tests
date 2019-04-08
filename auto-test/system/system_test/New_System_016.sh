@@ -37,7 +37,7 @@ test_result="pass"
 #自定义变量区域（可选）
 #var_name1="xxxx"
 #var_name2="xxxx"
-reboot_ip=172.19.20.37
+reboot_ip=172.19.20.162
 reboot_user="root"
 reboot_pass="root"
 

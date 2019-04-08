@@ -11,13 +11,17 @@ metadata:
         - centos
         - redhat
         - debian
-        - opensuse
+        - suse
     devices:
         - d05
         - d06
     level: 1
     totalcase: 
         ubuntu: 1
+        centos: 1
+        redhat: 1
+        debian: 1
+        suse: 1
 
 run:
     steps:
