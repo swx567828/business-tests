@@ -1,4 +1,3 @@
-
 metadata:
     name: Version_005
     format: "Lava-Test-Shell Test Definition 1.0"
@@ -12,7 +11,7 @@ metadata:
         - suse
         - redhat
         - debian
-        - ubuntu  
+        - ubuntu
     devices:
         - d05
     level: 1
@@ -30,4 +29,6 @@ parse:
     fixupdict:
         FAIL: fail
         PASS: pass
+
+
 
