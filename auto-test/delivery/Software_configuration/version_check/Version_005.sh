@@ -42,9 +42,10 @@ ibmc_pwd=Admin@9000
 function init_env()
 {
     #检查结果文件是否存在，创建结果文件：
-	PRINT_LOG "INFO" "*************************start to run test case<${test_name}>**********************************"
+    PRINT_LOG "INFO" "*************************start to run test case<${test_name}>**********************************"
     fn_checkResultFile ${RESULT_FILE}
     ethtool -h || fn_install_pkg ethtool 3
+    ipmitool -h || fn_install_pkg ipmitool 3
 }
 
 
