@@ -1,24 +1,24 @@
 #!/bin/bash
 
 #*****************************************************************************************
-# *用例名称：Suse_Relevant_007                                                         
-# *用例功能: 防火墙打开/关闭功能                                                  
-# *作者：mwx547872                                                                       
-# *完成时间：2019-2-21                                                                   
-# *前置条件：                                                                            
-#   1、预装linux操作系统                                                                   
-# *测试步骤：                                                                               
-#   1、 进入linux操作系统。         
-#   2.  执行防火墙打开/关闭功能        
-# *测试结果：                                                                            
-#  防火墙可以正常关闭/打开                                                         
+# *用例名称：Suse_Relevant_007
+# *用例功能: 防火墙打开/关闭功能
+# *作者：mwx547872
+# *完成时间：2019-2-21
+# *前置条件：
+#   1、预装linux操作系统
+# *测试步骤：
+#   1、 进入linux操作系统。
+#   2.  执行防火墙打开/关闭功能
+# *测试结果：
+#  防火墙可以正常关闭/打开
 #*****************************************************************************************
 set -x
 #加载公共函数
 . ../../../../utils/test_case_common.inc
 . ../../../../utils/error_code.inc
 . ../../../../utils/sys_info.sh
-. ../../../../utils/sh-test-lib		
+. ../../../../utils/sh-test-lib
 
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
@@ -36,7 +36,7 @@ test_result="pass"
 function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
-	fn_checkResultFile ${RESULT_FILE}
+fn_checkResultFile ${RESULT_FILE}
         if [ `whoami` != 'root' ]; then
             echo "You must be the superuser to run this script" > $2
             exit 1
@@ -46,12 +46,18 @@ function init_env()
 #测试执行
 function test_case()
 {
-	check_result ${RESULT_FILE}
+check_result ${RESULT_FILE}
         fn_get_os_type distro_type
         case $distro_type in
            "ubuntu" | "debian" )
              apt-get install ufw -y
-              ufw enable
+              EXPECT << EOF
+			  set timeout 100
+              spawn ufw enable
+			  expect "Command may"
+			  send "y\r"
+			  expect eof
+EOF
               ufw status|grep "active"
                if [ $? -eq 0 ]
                then
@@ -62,19 +68,19 @@ function test_case()
                  PRINT_LOG "INFO" "ufw enable is fail"
               fi
           ;;
-          
-         
+
+
            "centos" | "redhat" )
             systemctl start firewalld.service
             systemctl status firewalld.service|grep "running"
             if [ $? -eq 0 ]
             then
                fn_writeResultFile "${RESULT_FILE}" "start-firewalld" "pass"
-          
+
                PRINT_LOG "INFO" "start firewalld  is success"
 
           else
-         
+
               fn_writeResultFile "${RESULT_FILE}" "start-firewalld" "fail"
               PRINT_LOG "INFO" "start firewalld  is fail"
 
@@ -82,7 +88,8 @@ function test_case()
           ;;
 
           "suse")
-           systemctl start firewalld 
+           zypper install -y firewalld
+           systemctl start firewalld
            systemctl status firewalld|grep "running"
            if [ $? -eq 0 ]
 
@@ -104,14 +111,14 @@ function test_case()
 
          esac
          check_result ${RESULT_FILE}
-           
-       
+
+
 
 }
 function clean_env()
 {
        FUNC_CLEAN_TMP_FILE
-     	case $distro_type in
+      case $distro_type in
        "ubuntu"|"debian")
           ufw disable
           ufw status|grep "inactive"
