@@ -1,6 +1,0 @@
-[2019-03-12 10:24:48] [66642] WARN:  The LOG_LEVEL must be <INFO|WARN|FATAL>, it will be set to WARN by default..
-[2019-03-12 10:24:49] [66642] WARN: systemm is not suse
-[2019-03-12 10:26:56] [89207] system is suse
-[2019-03-12 10:26:57] [89207] This file FILE_NAME<./logs/temp/qperf_info.result> is empty!!!
-[2019-03-12 10:26:57] [89207] Test case <qperf_info> is success.
-[2019-03-12 10:27:00] [89207] suse have qperf package
