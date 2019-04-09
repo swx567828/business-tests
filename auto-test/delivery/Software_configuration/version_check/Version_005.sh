@@ -8,10 +8,10 @@
 # *前置条件：                                                                            
 #   1、D06服务器一台                                                                   
 # *测试步骤：                                                                               
-#	1 进入操作系统
-#	2 执行ipmitool -H 192.168.1.186 -I lanplus -U Administrator -P Admin@9000 mc info
+#   1 进入操作系统
+#   2 执行ipmitool -H 192.168.1.186 -I lanplus -U Administrator -P Admin@9000 mc info
 # *测试结果：                                                                            
-#	可以查询到BMC版本号为2.83                                                      
+#   可以查询到BMC版本号为2.83                                                      
 #*****************************************************************************************
 
 #加载公共函数
@@ -54,29 +54,29 @@ function init_env()
 function test_case()
 {
     #测试步骤实现部分
-	
-	count=0
-	len=${#ibmc_ip_list[@]}
-	for ip in ${ibmc_ip_list[@]}
-	do
-		get_firminfo=`ipmitool -H $ip -I lanplus -U ${ibmc_user} -P ${ibmc_pwd} mc info`
-		if [ $? -eq 0 ]
-		then
-			bios_version=`echo "{get_firminfo}" | grep "Firmware Revision" | awk -F":" '{print $2}'`
-			PRINT_LOG "INFO" "server firm info,bios version is ${bios_version}"
-			break
-		else
-			PRINT_LOG "INFO" "ip:$ip is not this server ip address"
-		fi
-		let count++
-	done
-	
-	if [ ${count} = $len ]
-	then
-		fn_writeResultFile "${RESULT_FILE}" "get_firminfo" "fail"
-	else
-		fn_writeResultFile "${RESULT_FILE}" "get_firminfo" "pass"
-	fi
+    
+    count=0
+    len=${#ibmc_ip_list[@]}
+    for ip in ${ibmc_ip_list[@]}
+    do
+        get_firminfo=`ipmitool -H $ip -I lanplus -U ${ibmc_user} -P ${ibmc_pwd} mc info`
+        if [ $? -eq 0 ]
+        then
+            bios_version=`echo "{get_firminfo}" | grep "Firmware Revision" | awk -F":" '{print $2}'`
+            PRINT_LOG "INFO" "server firm info,bios version is ${bios_version}"
+            break
+        else
+            PRINT_LOG "INFO" "ip:$ip is not this server ip address"
+        fi
+        let count++
+    done
+    
+    if [ ${count} = $len ]
+    then
+        fn_writeResultFile "${RESULT_FILE}" "get_firminfo" "fail"
+    else
+        fn_writeResultFile "${RESULT_FILE}" "get_firminfo" "pass"
+    fi
 
 
     #检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
