@@ -77,7 +77,7 @@ function test_case()
            mkdir -p /mnt/cdrom
 
           #挂载镜像
-           mount /root/RHEL-8.0.0-20190228.1-aarch64-dvd1.iso /mnt/cdrom
+           mount RHEL-8.0.0-20190228.1-aarch64-dvd1.iso /mnt/cdrom
             if [ $? -eq 0 ]
            then
               fn_writeResultFile "${RESULT_FILE}" "mount-iso" "pass"
@@ -185,6 +185,5 @@ init_env|| test_result="fail"
 
 main
 ret=$?
-LAVA平台上报结果接口，勿修改
 lava-test-case "$test_name" --result ${test_result}
 exit ${ret}
