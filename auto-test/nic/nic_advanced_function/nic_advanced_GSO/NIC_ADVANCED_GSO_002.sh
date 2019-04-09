@@ -21,7 +21,8 @@
 . ../../../../utils/test_case_common.inc
 . ../../../../utils/sys_info.sh
 . ../../../../utils/sh-test-lib 		
-
+#. ./error_code.inc
+#. ./test_case_common.inc
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
 #创建log目录
@@ -34,7 +35,98 @@ RESULT_FILE=${TMPDIR}/${test_name}.result
 
 #自定义变量区域（可选）
 test_result="pass"
+#************************************************************#
+# Name        : find_physical_card                                        #
+# Description : 查询物理网卡                                 #
+# Parameters  : 无           #
+# return value：total_network_cards[]
+#************************************************************#
+function find_physical_card(){
+	total_network_cards=(`ls /sys/class/net/`)
+	virtual_network_cards=(`ls /sys/devices/virtual/net/`)
+	len_total=${#total_network_cards[@]}
+	len_virtual=${#virtual_network_cards[@]}
+	
+	#去除非目录文件
+	for ((i=0;i<${len_total};i++))
+	do
+		if [ ! -d "/sys/class/net/${total_network_cards[i]}" ]; then
+			unset total_network_cards[i]
+		fi	
+	done
+	total_network_cards=(`echo ${total_network_cards[@]}`)
 
+	#去除非目录文件
+	for ((i=0;i<${len_virtual};i++))
+	do
+		if [ ! -d "/sys/devices/virtual/net/${virtual_network_cards[i]}" ]; then
+			unset virtual_network_cards[i]
+		fi	
+	done
+	virtual_network_cards=(`echo ${virtual_network_cards[@]}`)
+
+	#去除虚拟网卡
+	for ((i=0;i<${len_total};i++))
+	do
+		for ((j=0;j<${len_virtual};j++))
+		do
+			if [ "${total_network_cards[i]}" == "${virtual_network_cards[j]}" ]; then
+				unset total_network_cards[i]				
+				break
+			fi
+		done	
+	done
+	total_network_cards=(`echo ${total_network_cards[@]}`)
+	
+	for net in ${virtual_network_cards[@]}
+	do
+		PRINT_LOG "INFO" "please check this $net port"
+	done	
+}
+#************************************************************#
+# Name        : verify_network_module                        #
+# Description : 确认网络模块                                 #
+# Parameters  : 无
+# return      : 无                                      #
+#************************************************************#
+function verify_network_module(){
+	#查找所有物理网卡
+	#find_physical_card
+	
+	#保存所有网卡驱动	
+	for ((i=0;i<${#total_network_cards[@]};i++))
+	do
+		driver[i]=`ethtool -i ${total_network_cards[i]} | grep driver | awk '{print $2}'`
+	done
+	
+	#删除重复驱动
+	len=${#driver[@]}
+	#控制循环次数
+	for ((i=0;i<${len}-1;i++))
+	do
+		#与下一个元素比较，直到最后一个相同则删除
+		for ((j=i+1;j<${len};j++))
+		do
+			if [ "${driver[i]}" == "${driver[j]}" ]; then
+				unset driver[i]
+				break
+			fi
+		done
+	done
+	driver=(`echo ${driver[@]}`)
+	
+	for d in ${driver[@]}
+	do
+		if [ ! $d ];then
+			PRINT_LOG "FATAL" "some error or fail with this $d module"
+			fn_writeResultFile "${RESULT_FILE}" "$d module error or fail" "fail"
+			return 1
+		else
+			PRINT_LOG "INFO" "This $d module is normal"
+			fn_writeResultFile "${RESULT_FILE}" "$d module normal" "pass"
+		fi
+	done
+}
 ##************************************************************#
 # Name        : gso_check                                     #
 # Description : 测试网口gso功能                               #
@@ -82,33 +174,23 @@ function init_env()
 {
   #检查结果文件是否存在，创建结果文件：
 	fn_checkResultFile ${RESULT_FILE}
-  
-	if ! ethtool --version
-	then
-		pkgs="ethtool"
-		PRINT_LOG "INFO" "Start to install $pkgs"
-		install_deps_ex "${pkgs}"
-		if [ $? -ne 0 ]
-		then
-			PRINT_LOG "FATAL" "Install $pkgs fail"
-			fn_writeResultFile "${RESULT_FILE}" "Install $pkgs" "fail"
-		fi
-	fi
-
+	
 	#root用户执行
 	if [ `whoami` != 'root' ]
 	then
 		PRINT_LOG "INFO" "You must be root user " 
 		fn_writeResultFile "${RESULT_FILE}" "Run as root" "fail"
 	fi
+	ethtool -h || fn_install_pkg "ethtool" 10
+	find_physical_card
+	verify_network_module
 }
 
 function test_case(){
 	#查询所有网口
-	net_ports=`ip a|egrep -v "vir|lo"|grep -E "UP|DOWN"|awk -F": " '{print $2}'`
-	for port in $net_ports
+	for net in ${total_network_cards[@]}
 	do
-		gso_check $port
+		gso_check $net
 	done
 	check_result ${RESULT_FILE}
 }

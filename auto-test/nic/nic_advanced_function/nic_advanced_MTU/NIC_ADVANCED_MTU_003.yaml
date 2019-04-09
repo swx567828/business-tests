@@ -1,7 +1,7 @@
 metadata:
-    name: NIC_BASIC_MAC_006
+    name: NIC_ADVANCED_MTU_003
     format: "Lava-Test-Shell Test Definition 1.0"
-    description: "after network up-down , make sure MAC address consistent"
+    description: "view mtu value"
     maintainer:
         - min_shuai@hoperun.com
     scope:
@@ -23,7 +23,7 @@ metadata:
         ubuntu: 1   
 run:
     steps:
-        - "cd auto-test/nic/nic_basic_function/nic_basic_MAC; ./NIC_BASIC_MAC_006.sh; cd -"
+        - "cd auto-test/nic/nic_advanced_function/nic_advanced_MTU; ./NIC_ADVANCED_MTU_003.sh; cd -"
 parse:
    pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
    fixupdict:

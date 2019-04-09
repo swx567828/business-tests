@@ -1,20 +1,24 @@
 #!/bin/bash
 
 #*****************************************************************************************
-#用例名称：NIC_BASIC_MAC_005
-#用例功能：ethtool查询网口MAC地址
-#作者：hwx653129
+#用例名称：NIC_ADVANCED_GRO_001
+#用例功能：业务网口GRO设置查询测试
+#作者：swx649569
 #完成时间：2019-1-25
 
 #前置条件：
-#       1.单板启动正常
-#       2.所有网口各模块加载正常
+#    1.单板启动正常
+#    2.所有网口各模块加载正常
 
 #测试步骤：
-#       1.执行ethtool -P ethx查询网口MAC地址
+#    1. 调用命令“ethtool -k ethx”查询当前的GRO设置，有结果A）
+#    2. 调用命令“ethtool -K ethx gro off”修改GRO设置，并查询，有结果B）
+#    3.调用命令“ethtool -K ethx gro on”修改GRO设置，并查询，有结果A）
+#    4. 遍历所有网口
 
 #测试结果:
-#       1.显示网口的MAC地址                                                       
+# 	 A）generic-receive-offload: on
+#    B）generic-receive-offload off
 #*****************************************************************************************
 
 #加载公共函数,具体看环境对应的位置修改
@@ -22,8 +26,9 @@
 . ../../../../utils/test_case_common.inc
 . ../../../../utils/sys_info.sh
 . ../../../../utils/sh-test-lib
-#. ./utils/error_code.inc
-#. ./utils/test_case_common.inc
+#. ./error_code.inc
+#. ./test_case_common.inc
+ 
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
 #创建log目录
@@ -87,7 +92,6 @@ function find_physical_card(){
 		PRINT_LOG "INFO" "please check this $net port"
 	done	
 }
-
 #************************************************************#
 # Name        : verify_network_module                        #
 # Description : 确认网络模块                                 #
@@ -97,8 +101,8 @@ function find_physical_card(){
 function verify_network_module(){
 	#查找所有物理网卡
 	#find_physical_card
-	#保存所有网卡驱动
 	
+	#保存所有网卡驱动	
 	for ((i=0;i<${#total_network_cards[@]};i++))
 	do
 		driver[i]=`ethtool -i ${total_network_cards[i]} | grep driver | awk '{print $2}'`
@@ -132,60 +136,83 @@ function verify_network_module(){
 		fi
 	done
 }
+##************************************************************#
+# Name        : gro_check                                     #
+# Description : 测试网口gro功能                               #
+# Parameters  : $1 net_port                                   #
+#*************************************************************#
+function gro_check(){
+	#查看默认状态
+	gro_status=`ethtool -k $1 |grep generic-receive-offload|awk -F " " '{print $2}'`
+	if [ "$gro_status" != "on" ]
+	then
+		PRINT_LOG "FATAL" "The $1 gro initial state is off, please check it"
+		fn_writeResultFile "${RESULT_FILE}" "$1 gro initial state is off" "fail"
+	else
+		PRINT_LOG "INFO" "The $1 gro initial state is on"
+		fn_writeResultFile "${RESULT_FILE}" "$1 gro initial state is on" "pass"
+	fi
+	
+	#关闭gro
+	ethtool -K $1 gro off ;sleep 3
+	gro_status=`ethtool -k $1 |grep generic-receive-offload|awk -F " " '{print $2}'`
+	if [ "$gro_status" != "off" ]
+	then
+		PRINT_LOG "FATAL" "$1 gro set to off fail"
+		fn_writeResultFile "${RESULT_FILE}" "$1 gro set to off" "fail"
+	else
+		PRINT_LOG "INFO" "$1 gro set to off pass"
+		fn_writeResultFile "${RESULT_FILE}" "$1 gro set to off" "pass"
+	fi
+	
+	#开启gro
+	ethtool -K $1 gro on ;sleep 3
+	gro_status=`ethtool -k $1 |grep generic-receive-offload|awk -F " " '{print $2}'`
+	if [ "$gro_status" != "on" ]
+	then
+		PRINT_LOG "FATAL" "$1 gro set to on fail"
+		fn_writeResultFile "${RESULT_FILE}" "$1 gro set to on" "fail"
+	else
+		PRINT_LOG "INFO" "$1 gro set to on pass"
+		fn_writeResultFile "${RESULT_FILE}" "$1 gro set to on" "pass"
+	fi
+}
+
 
 #预置条件
 function init_env()
 {
     #检查结果文件是否存在，创建结果文件：
     fn_checkResultFile ${RESULT_FILE}
-
+    
     #root用户执行
     if [ `whoami` != 'root' ]
     then
-        PRINT_LOG "WARN" " You must be root user "
+        PRINT_LOG "WARN" " You must be root user " 
         return 1
     fi
-		ethtool -h || fn_install_pkg "ethtool" 10
-        find_physical_card
-        verify_network_module
-    #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份
+	ethtool -h || fn_install_pkg "ethtool" 10
+	find_physical_card
+	verify_network_module
+    #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份 
       #需要安装工具，使用公共函数install_deps，用法：install_deps "${pkgs}"
       #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
 }
 
-
-
 #测试执行
 function test_case()
 {
-    #ethtool查询网口MAC地址
-    #ls=("enp125s0f0" "enp125s0f1" "enp125s0f2" "enp125s0f3" "enp189s0f0" "enp189s0f1")
-    for net in ${total_network_cards[@]}
-    do
-		ethtool -P $net
-		if [ $? -eq 0 ]
-		then
-			PRINT_LOG "INFO" "$net has MAC address."
-			fn_writeResultFile "${RESULT_FILE}" "$net query mac" "pass"
-		else
-			PRINT_LOG "FATAL" "$net it can not find MAC address, please check it."
-			fn_writeResultFile "${RESULT_FILE}" "$net query mac" "fail"
-		fi
-    done
+	#给网口配置MAC地址
 
-	ethtool -P xxx
-	if [ $? -eq 0 ]
-	then
-		PRINT_LOG "FATAL" "query successful, please check it."
-		fn_writeResultFile "${RESULT_FILE}" "no device" "fail"
-	else
-		PRINT_LOG "INFO" "no such device xxx."
-		fn_writeResultFile "${RESULT_FILE}" "no device" "pass"
-	fi
-
+	for net in ${total_network_cards[@]}
+	do
+		gro_check $net
+	done	
+	
     #检查结果文件，根据测试选项结果，有一项为fail则修改test_result值为fail，
     check_result ${RESULT_FILE}
 }
+
 
 #恢复环境
 function clean_env()
@@ -194,6 +221,7 @@ function clean_env()
     FUNC_CLEAN_TMP_FILE
     #自定义环境恢复实现部分,工具安装不建议恢复
       #需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
+	
 }
 
 
@@ -205,8 +233,7 @@ function main()
         test_case || test_result="fail"
     fi
     clean_env || test_result="fail"
-    [ "${test_result}" = "pass" ] || return 1
-
+	[ "${test_result}" = "pass" ] || return 1
 }
 
 main $@
@@ -214,3 +241,4 @@ ret=$?
 #LAVA平台上报结果接口，勿修改
 lava-test-case "$test_name" --result ${test_result}
 exit ${ret}
+
