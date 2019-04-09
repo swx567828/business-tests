@@ -24,8 +24,8 @@
 . ../../../../utils/test_case_common.inc
 . ../../../../utils/sys_info.sh
 . ../../../../utils/sh-test-lib
-#. ./utils/error_code.inc
-#. ./utils/test_case_common.inc
+#. ./error_code.inc
+#. ./test_case_common.inc
  
 #获取脚本名称作为测试用例名称
 test_name=$(basename $0 | sed -e 's/\.sh//')
@@ -59,18 +59,18 @@ function find_physical_card(){
 	do
 		if [ ! -d "/sys/class/net/${total_network_cards[i]}" ]; then
 			unset total_network_cards[i]
-			total_network_cards=(`echo ${total_network_cards[@]}`)
 		fi	
 	done
+	total_network_cards=(`echo ${total_network_cards[@]}`)
 
 	#去除非目录文件
 	for ((i=0;i<${len_virtual};i++))
 	do
 		if [ ! -d "/sys/devices/virtual/net/${virtual_network_cards[i]}" ]; then
 			unset virtual_network_cards[i]
-			virtual_network_cards=(`echo ${virtual_network_cards[@]}`)
 		fi	
 	done
+	virtual_network_cards=(`echo ${virtual_network_cards[@]}`)
 
 	#去除虚拟网卡
 	for ((i=0;i<${len_total};i++))
@@ -143,9 +143,10 @@ function verify_network_module(){
 function pre_mac(){
 	for ((i=0;i<${#total_network_cards[@]};i++))
 	do
-		mac[i]=`ifconfig ${total_network_cards[i]} | grep "ether" | awk '{print $2}'`		
-		#ethtool -P $net | awk '{print $3}'
+		mac[i]=`ip link show ${total_network_cards[i]} |grep "ether"|awk '{print $2}'`
+		sleep 2
 	done
+	mac=(`echo ${mac[@]}`)
 }
 #************************************************************#
 # Name        : restore_mac                        #
@@ -156,7 +157,8 @@ function pre_mac(){
 function restore_mac(){
 	for ((i=0;i<${#total_network_cards[@]};i++))	
 	do
-		ifconfig ${total_network_cards[i]} hw ether ${mac[i]}
+		ip link set dev ${total_network_cards[i]} address ${mac[i]}
+		sleep 2
 	done
 }
 
@@ -173,20 +175,8 @@ function init_env()
         PRINT_LOG "WARN" " You must be root user " 
         return 1
     fi
-	ifconfig -h
-	if [ $? -eq 0 ]
-	then
-		PRINT_LOG "INFO" " exec<ifconfig -h> is scuccess"
-	else
-		fn_install_pkg "net-tools" 10
-		if [ $? -eq 0 ]
-		then
-			PRINT_LOG "INFO" "install net-tool is scuccess "
-		else
-			PRINT_LOG "FATAL" "install net-tool is fail"
-		fi
-	fi
-	fn_install_pkg "ethtool" 10
+	
+	ethtool -h || fn_install_pkg "ethtool" 10
 	find_physical_card
 	verify_network_module
 	pre_mac
@@ -199,72 +189,43 @@ function init_env()
 function test_case()
 {
 	#给网口配置MAC地址
-	mac_address=("00:00:00:00:00:00" "FF:FF:FF:FF:FF:FF" "00:18:85" "00:18:85:00:00:4e:88:24")
-	shrot_mac="00:18:85:00:00:00"
-	shrot_mac1="00:18:85:ff:00:00"
-	lang_mac="00:18:85:00:00:4e"	
+	zero_mac=00:00:00:00:00:00
+	one_mac=FF:FF:FF:FF:FF:FF
+	shrot_mac=00:18:85
+	lang_mac=00:18:85:00:00:4e:88:24
 	for net in ${total_network_cards[@]}
-	do	
-		ifconfig $net hw ether ${mac_address[0]}		
+	do		
+		ip link set dev $net address $zero_mac || ip link set dev $net address $one_mac
 		if [ $? -eq 0 ]
 		then 
-			PRINT_LOG "FATAL" "This $net MAC address is ${mac_address[0]}, please check it."
-			PRINT_LOG "INFO" " exec<ifconfig $net hw ether ${mac_address[0]}>"
-			fn_writeResultFile "${RESULT_FILE}" "modify $net illegal MAC address ${mac_address[0]}" "fail"
+			PRINT_LOG "FATAL" "This $net execute successful, please check it."
+			PRINT_LOG "INFO" " exec<ip link set dev $net address $zero_mac || ip link set dev $net address $one_mac>"
+			fn_writeResultFile "${RESULT_FILE}" "modify $net MAC address $zero_mac or $one_mac" "fail"
 		else
-			PRINT_LOG "INFO" "$net can not assign requested address ${mac_address[0]}."
-			PRINT_LOG "INFO" " exec<ifconfig $net hw ether ${mac_address[0]}> is scuccess"
-			fn_writeResultFile "${RESULT_FILE}" "modify $net illegal MAC address ${mac_address[0]}" "pass"
+			PRINT_LOG "INFO" "$net can not assign requested address."
+			fn_writeResultFile "${RESULT_FILE}" "modify $net MAC address $zero_mac or $one_mac" "pass"
 		fi	
 		
-		ifconfig $net hw ether ${mac_address[1]}
+		ip link set dev $net address $shrot_mac || ip link set dev $net address $lang_mac
 		if [ $? -eq 0 ]
 		then 
-			PRINT_LOG "FATAL" "This $net MAC address is ${mac_address[1]}, please check it."
-			PRINT_LOG "INFO" " exec<ifconfig $net hw ether ${mac_address[1]}>"
-			fn_writeResultFile "${RESULT_FILE}" "modify $net illegal MAC address ${mac_address[1]}" "fail"			
+			PRINT_LOG "FATAL" "This $net execute successful, please check it."
+			PRINT_LOG "INFO" " exec<ip link set dev $net address $shrot_mac || ip link set dev $net address $lang_mac>"
+			fn_writeResultFile "${RESULT_FILE}" "modify $net MAC address $shrot_mac or $lang_mac" "fail"
 		else
-			PRINT_LOG "INFO" "$net can not assign requested address ${mac_address[1]}."
-			PRINT_LOG "INFO" " exec<ifconfig $net hw ether ${mac_address[1]}> is scuccess"
-			fn_writeResultFile "${RESULT_FILE}" "modify $net illegal MAC address ${mac_address[1]}" "pass"
-		fi
-		
-		ifconfig $net hw ether ${mac_address[2]}
-		tmp_mac=$(ifconfig $net | grep "ether" | awk '{print $2}')
-		if [ "${tmp_mac}" == "${shrot_mac}" -o "${tmp_mac}" == "${shrot_mac1}" ]
-		then 
-			PRINT_LOG "INFO" "$net can set up MAC address."
-			PRINT_LOG "INFO" " exec<ifconfig $net hw ether ${mac_address[2]}> is scuccess"
-			fn_writeResultFile "${RESULT_FILE}" "modify $net short mac address ${mac_address[2]}" "pass"
-		else
-			PRINT_LOG "FATAL" "$net can not set up MAC address, please check it."
-			PRINT_LOG "INFO" " exec<ifconfig $net hw ether ${mac_address[2]}>"
-			fn_writeResultFile "${RESULT_FILE}" "modify $net short mac address ${mac_address[2]}" "fail"
-		fi
-		
-		ifconfig $net hw ether ${mac_address[3]}
-		tmp_mac=$(ifconfig $net | grep "ether" | awk '{print $2}')
-		if [ "${tmp_mac}" == "${lang_mac}" ]
-		then 
-			PRINT_LOG "INFO" "$net can set up MAC address."
-			PRINT_LOG "INFO" " exec<ifconfig $net hw ether ${mac_address[3]}> is scuccess"
-			fn_writeResultFile "${RESULT_FILE}" "modify $net long mac address ${mac_address[3]}" "pass"
-		else
-			PRINT_LOG "FATAL" "$net can not set up MAC address, please check it."
-			PRINT_LOG "INFO" " exec<ifconfig $net hw ether ${mac_address[3]}>"
-			fn_writeResultFile "${RESULT_FILE}" "modify $net long mac address ${mac_address[3]}" "fail"
-		fi
+			PRINT_LOG "INFO" "$net must be 6 bytes."
+			fn_writeResultFile "${RESULT_FILE}" "modify $net MAC address $shrot_mac or $lang_mac" "pass"
+		fi				
 	done
 	
-	ifconfig xxx hw ether 00:18:85:00:00:4e
+	ip link set dev xxx address 00:18:85:00:00:4e
 	if [ $? -eq 0 ]
 	then 
 		PRINT_LOG "FATAL" "modify success, please check it, this xxx device is not exist."
-		PRINT_LOG "INFO" "exec<ifconfig xxx hw ether 00:18:85:00:00:4e>"
+		PRINT_LOG "INFO" "exec<ip link set dev xxx address 00:18:85:00:00:4e>"
 		fn_writeResultFile "${RESULT_FILE}" "device is not exist" "fail"
 	else
 		PRINT_LOG "INFO" "This xxx device is not exist."
-		PRINT_LOG "INFO" "exec<ifconfig xxx hw ether 00:18:85:00:00:4e>"
 		fn_writeResultFile "${RESULT_FILE}" "device is not exist" "pass"
 	fi
 	
