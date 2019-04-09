@@ -58,9 +58,9 @@ function test_case()
           #下载redhat官方源 
           #wget -c ${ci_http_addr}/test_dependents/RHEL-8.0.0-20190228.1-aarch64-dvd1.iso
 		   yum install wget -y
-           wget http://10.90.31.177/business/redhat/RedhatRHEL-8-0-0/RHEL-8.0.0-20190228.1-aarch64-dvd1.iso
+           wget http://172.19.20.112/business/redhat/RedhatRHEL-8-0-0/RHEL-8.0.0-20190228.1-aarch64-dvd1.iso
           if [ $? -eq 0 ]
-          then
+		  then
               fn_writeResultFile "${RESULT_FILE}" "wget-rhel-iso" "pass"
 
               PRINT_LOG "INFO" "download redhat source iso success"
