@@ -207,19 +207,30 @@ detect_abi() {
 }
 
 dist_name() {
-    os_type=`cat /etc/os-release | grep -w ID | awk -F"=" '{print $2}' | tr '[:upper:]' '[:lower:]'`
-    if [ ${os_type} = \"suse\" ] || [ ${os_type} = "suse" ] || [ ${os_type} = \"sles\" ] || [ ${os_type} = "sles" ]; then
-        dist="suse"
-    elif [ ${os_type} = \"ubuntu\" ] || [ ${os_type} = "ubuntu" ]; then
-        dist="ubuntu"
-    elif [ ${os_type} = \"redhat\" ] || [ ${os_type} = "redhat" ] || [ ${os_type} = \"rhel\" ] || [ ${os_type} = "rhel" ]; then
-        dist="redhat"
-    elif [ ${os_type} = \"centos\" ] || [ ${os_type} = "centos" ]; then
-        dist="centos"
-    elif [ ${os_type} = \"debian\" ] || [ ${os_type} = "debian" ]; then
+    if [ -x /usr/bin/lsb_release ]; then
+        dist="$(lsb_release -si)"
+    elif [ -f /etc/lsb-release ]; then
+        dist="$(. /etc/lsb-release && echo "${DISTRIB_ID}")"
+    elif [ -f /etc/debian_version ]; then
         dist="debian"
+    elif [ -f /etc/fedora-release ]; then
+        dist="fedora"
+    elif [ -f /etc/centos-release ]; then
+        dist="centos"
+    elif [ -f /etc/redhat-release ]; then
+       dist="redhat"
+    elif [ -f /etc/SUSE-brand ]; then
+	dist="suse"
+    #elif [ -f /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        #dist=$(. /etc/os-release && echo "${ID}")
+     else
+        dist="unknown"
+        warn_msg "Unsupported distro: cannot determine distribution name"
     fi
-   
+    if [ $dist == "rhel" ];then
+		 dist=redhat
+	fi
     # convert dist to lower case
     dist=$(echo ${dist} | tr '[:upper:]' '[:lower:]')
     case "${dist}" in
