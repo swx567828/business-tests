@@ -22,10 +22,10 @@
 #*****************************************************************************************
 
 #加载公共函数,具体看环境对应的位置修改
-. ../../../../utils/error_code.inc
-. ../../../../utils/test_case_common.inc
-. ../../../../utils/sys_info.sh
-. ../../../../utils/sh-test-lib
+. ../../../../../utils/error_code.inc
+. ../../../../../utils/test_case_common.inc
+. ../../../../../utils/sys_info.sh
+. ../../../../../utils/sh-test-lib
 
 #. ../../utils/error_code.inc
 #. ../../utils/test_case_common.inc
