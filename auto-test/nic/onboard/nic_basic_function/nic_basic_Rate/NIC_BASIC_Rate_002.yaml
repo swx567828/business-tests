@@ -1,29 +1,21 @@
 metadata:
-    name: NIC_ADVANCED_MTU_002
+    name: NIC_BASIC_Rate_002 
     format: "Lava-Test-Shell Test Definition 1.0"
-    description: "view mtu value"
+    description: "Net port correct query"
     maintainer:
         - min_shuai@hoperun.com
     scope:
-        - minshuai
+        - fxg
     os:
-        - centos 
-        - debian 
-        - redhat 
-        - suse 
-        - ubuntu  
+        - centos  
     devices:
         - d05
     level: 1
     totalcase:
         centos: 1
-        debian: 1
-        redhat: 1
-        suse: 1
-        ubuntu: 1   
 run:
     steps:
-        - "cd auto-test/nic/nic_advanced_function/nic_advanced_MTU; ./NIC_ADVANCED_MTU_002.sh; cd -"
+        - "cd auto-test/nic/onboard/nic_basic_function/nic_basic_Rate; ./NIC_BASIC_Rate_002.sh; cd -"
 parse:
    pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
    fixupdict:
@@ -32,5 +24,4 @@ parse:
    
    
    
-   
-   
+

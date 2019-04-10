@@ -17,7 +17,7 @@ metadata:
 
 run:
     steps:
-        - "cd auto-test/nic/nic_advanced_function/nic_advanced_VLAN; ./NIC_ADVANCED_VLAN_002.sh; cd -"
+        - "cd auto-test/nic/onboard/nic_advanced_function/nic_advanced_VLAN; ./NIC_ADVANCED_VLAN_002.sh; cd -"
 parse:
    pattern: "^(?!.+ED)(?P<test_case_id>\\w+)\\s+(?P<result>\\w+)\\s+\\d$"
    fixupdict:
