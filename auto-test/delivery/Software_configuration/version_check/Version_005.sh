@@ -33,7 +33,7 @@ RESULT_FILE=${TMPDIR}/${test_name}.result
 TMPCFG=${TMPDIR}/${test_name}.tmp_cfg
 test_result="pass"
 
-ibmc_ip_list=(172.19.20.53 172.19.20.5 172.19.20.149 172.19.20.150 192.168.1.154)
+ibmc_ip_list=(172.16.11.5 172.16.11.6 172.16.11.11 172.16.11.10 192.168.1.154)
 ibmc_user=Administrator
 ibmc_pwd=Admin@9000
 
@@ -62,6 +62,7 @@ function test_case()
         get_firminfo=`ipmitool -H $ip -I lanplus -U ${ibmc_user} -P ${ibmc_pwd} mc info`
         if [ $? -eq 0 ]
         then
+            PRINT_LOG "INFO" "ip:$ip is this server ip address,get it"
             bios_version=`echo "{get_firminfo}" | grep "Firmware Revision" | awk -F":" '{print $2}'`
             PRINT_LOG "INFO" "server firm info,bios version is ${bios_version}"
             break
