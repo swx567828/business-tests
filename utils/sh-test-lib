@@ -207,7 +207,11 @@ detect_abi() {
 }
 
 dist_name() {
-    if [ -f /etc/debian_version ]; then
+    if [ -x /usr/bin/lsb_release ]; then
+        dist="$(lsb_release -si)"
+    elif [ -f /etc/lsb-release ]; then
+        dist="$(. /etc/lsb-release && echo "${DISTRIB_ID}")"
+    elif [ -f /etc/debian_version ]; then
         dist="debian"
     elif [ -f /etc/fedora-release ]; then
         dist="fedora"
@@ -217,15 +221,10 @@ dist_name() {
        dist="redhat"
     elif [ -f /etc/SUSE-brand ]; then
 	dist="suse"
-    elif [ -x /usr/bin/lsb_release ]; then
-        dist="$(lsb_release -si)"
     #elif [ -f /etc/os-release ]; then
         # shellcheck disable=SC1091
         #dist=$(. /etc/os-release && echo "${ID}")
-    elif [ -f /etc/lsb-release ]; then
-        # shellcheck disable=SC1091
-        dist="$(. /etc/lsb-release && echo "${DISTRIB_ID}")"
-    else
+     else
         dist="unknown"
         warn_msg "Unsupported distro: cannot determine distribution name"
     fi
