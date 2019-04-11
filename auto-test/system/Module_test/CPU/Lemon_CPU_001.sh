@@ -71,11 +71,8 @@ function init_env()
     #自定义测试预置条件检查实现部分：比如工具安装，检查多机互联情况，执行用户身份 
 	#需要安装工具，使用公共函数install_deps，用法：install_deps "${pkgs}"
 	#需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
-	export http_proxy="http://172.19.16.11:3128"
-	export https_proxy="http://172.19.16.11:3128"
-	export no_proxy=172.19.20.15
 
-	install_deps "wget gcc make" 
+	fn_install_pkg "wget gcc make" 
 	if [ $? -eq 0 ];then
 		fn_writeResultFile "${RESULT_FILE}" "install_deps"  "pass"
 	else
