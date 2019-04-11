@@ -77,7 +77,7 @@ function init_env()
 	# install_deps unzip make gcc automake
 	for pkg in unzip make gcc automake wget
         do
-                which $pkg || install_deps $pkg
+                which $pkg || fn_install_pkg $pkg
                 if [ $? != 0 ];then
                         PRINT_LOG "FATAL" "download $pkg"
                         exit 1
@@ -92,9 +92,6 @@ function test_case()
 	#如果执行的命令分系统，请使用distro变量来区分OS类型
 	#需要日志打印，使用公共函数PRINT_LOG，用法：PRINT_LOG "INFO|WARN|FATAL" "xxx"
 	  #记录每项测试结果，使用公共函数fn_writeResultFile，用法：fn_writeResultFile "${RESULT_FILE}" "test_item_name" "pass|fail"
-	export http_proxy="http://172.19.16.11:3128"
-        export https_proxy="http://172.19.16.11:3128"
-	export no_proxy=172.19.20.15
 	cd /home/ && wget -c -q http://172.19.20.15:8083/perform_depends/test_dependent/ltp-master.zip && unzip -q ltp-master.zip
 	cd -
 	cd /home/ltp-master && ./build.sh
